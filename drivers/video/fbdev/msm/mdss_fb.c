@@ -963,7 +963,7 @@ int mdss_first_set_feature(struct mdss_panel_data *pdata,int first_ce_state,int 
 		case 0x1:
 			if (ctrl->ce_on_cmds.cmd_cnt){
 				mdss_dsi_panel_cmds_send(ctrl, &ctrl->ce_on_cmds,CMD_REQ_COMMIT);
-				pr_info("set ce over\n");
+				pr_debug("set ce over\n");
 			}
 			break;
 		case 0x2:
