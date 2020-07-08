@@ -1,4 +1,5 @@
-/* Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -64,9 +65,9 @@ static bool force_warm_reboot;
  * There is no API from TZ to re-enable the registers.
  * So the SDI cannot be re-enabled when it already by-passed.
  */
-int download_mode = 0;
+int download_mode = 1;
 #else
-static const int download_mode;
+static const int download_mode = 1;
 #endif
 
 #ifdef CONFIG_QCOM_DLOAD_MODE
@@ -305,25 +306,25 @@ static void msm_restart_prepare(const char *cmd)
 				(cmd != NULL && cmd[0] != '\0'));
 	}
 
-	if (force_warm_reboot)
-		pr_info("Forcing a warm reset of the system\n");
-
 	/* Hard reset the PMIC unless memory contents must be maintained. */
-	if (force_warm_reboot || need_warm_reset)
+	if (need_warm_reset)
 		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
 	else
 		qpnp_pon_system_pwr_off(PON_POWER_OFF_HARD_RESET);
 
 // xuke @ 20180611	Import pstore patch from XiaoMi.	Begin
 	if (in_panic) {
-		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
+#ifdef CONFIG_BOOT_INFO
 		qpnp_pon_set_restart_reason(PON_RESTART_REASON_PANIC);
-		__raw_writel(0x77665504, restart_reason);
+#endif
+		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
 	} else if (cmd != NULL) {
 		if (!strncmp(cmd, "bootloader", 10)) {
 			qpnp_pon_set_restart_reason(
 				PON_RESTART_REASON_BOOTLOADER);
+			pr_err("jl bootloader step 1\n");
 			__raw_writel(0x77665500, restart_reason);
+			pr_err("jl bootloader step 2\n");
 		} else if (!strncmp(cmd, "recovery", 8)) {
 			qpnp_pon_set_restart_reason(
 				PON_RESTART_REASON_RECOVERY);
@@ -370,20 +371,22 @@ static void msm_restart_prepare(const char *cmd)
 					     restart_reason);
 			}
 		} else if (!strncmp(cmd, "edl", 3)) {
-			/* Add-begin disable reboot edl command for MIUI needs by jianglei 20180619 */
 			if (0) {
 				enable_emergency_dload_mode();
-			} else{
+			} else {
 				pr_info("This command already been disabled");
 			}
-			/* Add-end disable reboot edl command for MIUI needs by jianglei 20180619 */
 		} else {
+#ifdef CONFIG_BOOT_INFO
 			qpnp_pon_set_restart_reason(PON_RESTART_REASON_NORMAL);
+#endif
 			__raw_writel(0x77665501, restart_reason);
 		}
+#ifdef CONFIG_BOOT_INFO
 	} else {
-		qpnp_pon_set_restart_reason(PON_RESTART_REASON_NORMAL);
-		__raw_writel(0x77665501, restart_reason);
+			qpnp_pon_set_restart_reason(PON_RESTART_REASON_NORMAL);
+			__raw_writel(0x77665501, restart_reason);
+#endif
 	}
 
 	flush_cache_all();
@@ -709,9 +712,6 @@ skip_sysfs_create:
 	set_dload_mode(download_mode);
 	if (!download_mode)
 		scm_disable_sdi();
-
-	force_warm_reboot = of_property_read_bool(dev->of_node,
-						"qcom,force-warm-reboot");
 
 	return 0;
 

@@ -1,5 +1,5 @@
-/* Copyright (c) 2014-2016, 2018 The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+/* Copyright (c) 2014-2016, 2018-2019 The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -8311,9 +8311,9 @@ static void thermal_fb_notifier_resume_work(struct work_struct *work)
 	struct smbchg_chip *chip = container_of(work, struct smbchg_chip, fb_notify_work);
 
 	LctThermal = 1;
-	if((lct_backlight_off) && (LctIsInCall == 0))
-		smbchg_system_temp_level_set(chip,lct_therm_level);
-	else if(LctIsInCall == 1)
+	if((lct_backlight_off) && (LctIsInCall == 0))//wait
+		smbchg_system_temp_level_set(chip,lct_therm_level);//JEITA level_set = 0
+	else if(LctIsInCall == 1)//phone
 		smbchg_system_temp_level_set(chip,2);//vote 1A
 	else
 		smbchg_system_temp_level_set(chip,lct_therm_lvl_reserved);

@@ -2,7 +2,7 @@
  *  linux/init/main.c
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
- *  Copyright (C) 2019 XiaoMi, Inc.
+ *  Copyright (C) 2020 XiaoMi, Inc.
  *
  *  GK 2/5/95  -  Changed to support mounting root fs via NFS
  *  Added initrd & change_root: Werner Almesberger & Hans Lermen, Feb '96
@@ -519,13 +519,15 @@ asmlinkage __visible void __init start_kernel(void)
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);
-	p = NULL;
+		p = NULL;
 	p= strstr(boot_command_line, "androidboot.fpsensor=fpc");
 	if(p) {
 		fpsensor = 1;//fpc fingerprint
 	} else {
 		fpsensor = 2;//goodix fingerprint
 	}
+	/* parameters may set static keys */
+	jump_label_init();
 	parse_early_param();
 	after_dashes = parse_args("Booting kernel",
 				  static_command_line, __start___param,

@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -4559,6 +4560,7 @@ static int dwc3_msm_gadget_vbus_draw(struct dwc3_msm *mdwc, unsigned int mA)
 	union power_supply_propval pval = {0};
 	int ret, psy_type;
 
+	dev_info(mdwc->dev,"dwc3_msm_gadget_vbus_draw %u\n",mA);
 	psy_type = get_psy_type(mdwc);
 	if (psy_type == POWER_SUPPLY_TYPE_USB_FLOAT) {
 		if (!mA)
@@ -4669,15 +4671,15 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 			dwc3_otg_start_peripheral(mdwc, 1);
 			mdwc->drd_state = DRD_STATE_PERIPHERAL;
 
-			if(!dwc->softconnect && get_psy_type(mdwc) == POWER_SUPPLY_TYPE_USB_CDP) {
-				u32 reg;
-				dbg_event(0xFF, "cdp pullup dp", 0);
+            if(!dwc->softconnect && get_psy_type(mdwc) == POWER_SUPPLY_TYPE_USB_CDP) {
+                u32 reg;
+                dbg_event(0xFF, "cdp pullup dp", 0);
 
-				reg = dwc3_readl(dwc->regs, DWC3_DCTL);
-				reg |= DWC3_DCTL_RUN_STOP;
-				dwc3_writel(dwc->regs, DWC3_DCTL, reg);
-				break;
-			}
+                reg = dwc3_readl(dwc->regs, DWC3_DCTL);
+                reg |= DWC3_DCTL_RUN_STOP;
+                dwc3_writel(dwc->regs, DWC3_DCTL, reg);
+                break;
+            }
 
 			work = 1;
 		} else {

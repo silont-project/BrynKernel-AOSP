@@ -1,5 +1,5 @@
 /* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1225,10 +1225,7 @@ int subsystem_restart_dev(struct subsys_device *dev)
 		dev->restart_level = 1;
 		in_panic = 1;
 	}
-
-// Add ssr feature by jianglei for checking nv begin 20181220
-       dev->restart_level = 1;
-// Add ssr feature by jianglei for checking nv end 20181220
+// End
 	pr_info("Restart sequence requested for %s, restart_level = %s.\n",
 		name, restart_levels[dev->restart_level]);
 

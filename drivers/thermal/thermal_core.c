@@ -733,7 +733,7 @@ sconfig_store(struct device *dev, struct device_attribute *devattr,
 }
 
 static DEVICE_ATTR(sconfig,0644,sconfig_show,sconfig_store);
-#endif
+#endif //CONFIG_THERMAL_SWITCH
 
 static ssize_t
 type_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -2729,9 +2729,9 @@ unregister:
 
 
 void thermal_message_device_unregister(void) {
-
+	//Do nothing
 }
-#endif
+#endif //CONFIG_THERMAL_SWITCH
 
 static int __init thermal_init(void)
 {
@@ -2764,7 +2764,7 @@ static int __init thermal_init(void)
 			result);
 #ifdef CONFIG_THERMAL_SWITCH
 	result = thermal_message_device_register();
-#endif
+#endif //CONFIG_THERMAL_SWITCH
 
 	return 0;
 
@@ -2787,7 +2787,7 @@ static void thermal_exit(void)
 {
 #ifdef CONFIG_THERMAL_SWITCH
 	thermal_message_device_unregister();
-#endif
+#endif //CONFIG_THERMAL_SWITCH
 	unregister_pm_notifier(&thermal_pm_nb);
 	of_thermal_destroy_zones();
 	destroy_workqueue(thermal_passive_wq);

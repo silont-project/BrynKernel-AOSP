@@ -2,7 +2,7 @@
  * bootinfo.c
  *
  * Copyright (C) 2011 Xiaomi Ltd.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -159,12 +159,12 @@ static ssize_t powerup_reason_show(struct kobject *kobj, struct kobj_attribute *
 		pu_reason_index = PU_REASON_EVENT_PON1;
 	if (pu_reason_index < PU_REASON_MAX && pu_reason_index >=0) {
 		s += snprintf(s, strlen(powerup_reasons[pu_reason_index]) + 2,
-			        "%s\n", powerup_reasons[pu_reason_index]);
+                               "%s\n", powerup_reasons[pu_reason_index]);
 		printk(KERN_DEBUG "%s: pu_reason [0x%x] index %d\n",
 			__func__, pu_reason, pu_reason_index);
 		goto out;
 	}
-	s += snprintf(s, 15, "unknown reboot");
+	s += snprintf(s, 15, "unknown reboot\n");
 out:
 	return (s - buf);
 }
