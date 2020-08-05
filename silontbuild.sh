@@ -53,7 +53,7 @@ for MODULES in $(find "${OUTDIR}" -name '*.ko'); do
     find "${OUTDIR}" -name '*.ko' -exec cp {} "${VENDOR_MODULEDIR}" \;
     case ${MODULES} in
             */pronto_wlan.ko)
-        cp "${MODULES}" "${VENDOR_MODULEDIR}/pronto_wlan.ko" ;;
+        cp "${MODULES}" "${VENDOR_MODULEDIR}/wlan.ko" ;;
     esac
 done
 echo -e "\n(i) Done moving modules"
