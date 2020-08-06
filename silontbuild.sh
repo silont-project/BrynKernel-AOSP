@@ -57,7 +57,7 @@ for MODULES in $(find "${OUTDIR}" -name '*.ko'); do
     esac
 done
 echo -e "\n(i) Done moving modules"
-rm "${VENDOR_MODULEDIR}/pronto_wlan.ko"
+rm "${VENDOR_MODULEDIR}/wlan.ko"
 
 cd $ZIP_DIR
 cp $KERN_IMG zImage
