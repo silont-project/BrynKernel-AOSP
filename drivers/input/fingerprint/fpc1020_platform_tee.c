@@ -18,7 +18,7 @@
  *
  *
  * Copyright (c) 2015 Fingerprint Cards AB <tech@fingerprints.com>
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License Version 2
@@ -85,7 +85,7 @@ struct fpc1020_data {
 	struct pinctrl_state *pinctrl_state[ARRAY_SIZE(pctl_names)];
 	struct regulator *vreg[ARRAY_SIZE(vreg_conf)];
 
-
+	//struct wake_lock ttw_wl;
 	struct wakeup_source ttw_ws;//for kernel 4.9
 	int irq_gpio;
 	int rst_gpio;
@@ -138,7 +138,7 @@ found:
 					name, rc);
 		}
 
-
+        //rc = regulator_set_optimum_mode(vreg, vreg_conf[i].ua_load);
 		rc = regulator_set_load(vreg, vreg_conf[i].ua_load);//for kernel 4.9
 		if (rc < 0)
 			dev_err(dev, "Unable to set current on %s, %d\n",
@@ -498,8 +498,8 @@ static irqreturn_t fpc1020_irq_handler(int irq, void *handle)
 	//pr_info("%s\n", __func__);
 
 	if (atomic_read(&fpc1020->wakeup_enabled)) {
-
-
+		//wake_lock_timeout(&fpc1020->ttw_wl,
+		//			msecs_to_jiffies(FPC_TTW_HOLD_TIME));
 		__pm_wakeup_event(&fpc1020->ttw_ws, FPC_TTW_HOLD_TIME);//for kernel 4.9
 	}
 
@@ -573,16 +573,16 @@ static struct notifier_block fpc_notif_block = {
 	.notifier_call = fpc_fb_notif_callback,
 };
 
-static int proc_show_ver(struct seq_file *file,void *v)
+static int proc_show_ver(struct seq_file *file, void *v)
 {
-	seq_printf(file,"Fingerprint: FPC\n");
+	seq_printf(file, "Fingerprint: FPC\n");
 	return 0;
 }
 
-static int proc_open(struct inode *inode,struct file *file)
+static int proc_open(struct inode *inode, struct file *file)
 {
 	printk("fpc proc_open\n");
-	single_open(file,proc_show_ver,NULL);
+	single_open(file, proc_show_ver, NULL);
 	return 0;
 }
 
@@ -695,7 +695,7 @@ static int fpc1020_probe(struct platform_device *pdev)
 	/* Request that the interrupt should be wakeable */
 	enable_irq_wake(gpio_to_irq(fpc1020->irq_gpio));
 
-
+	//wake_lock_init(&fpc1020->ttw_wl, WAKE_LOCK_SUSPEND, "fpc_ttw_wl");
 	wakeup_source_init(&fpc1020->ttw_ws, "fpc_ttw_ws");//for kernel 4.9
 
 	rc = sysfs_create_group(&dev->kobj, &attribute_group);
@@ -737,7 +737,7 @@ static int fpc1020_remove(struct platform_device *pdev)
 	fb_unregister_client(&fpc1020->fb_notifier);
 	sysfs_remove_group(&pdev->dev.kobj, &attribute_group);
 	mutex_destroy(&fpc1020->lock);
-
+	//wake_lock_destroy(&fpc1020->ttw_wl);
 	wakeup_source_trash(&fpc1020->ttw_ws);//for kernel 4.9
 	(void)vreg_setup(fpc1020, "vdd_ana", false);
 	(void)vreg_setup(fpc1020, "vdd_io", false);

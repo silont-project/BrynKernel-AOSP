@@ -3,7 +3,7 @@
  * FocalTech fts TouchScreen driver.
  *
  * Copyright (c) 2012-2018, Focaltech Ltd. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -1861,7 +1861,7 @@ u8 fts_LockDownInfo_get(struct i2c_client *client,char *pProjectCode)
 	u8 j = 0;
 	u8 auc_i2c_write_buf[4];
 	int i_ret;
-
+	//u32 temp;
 	u8 uc_tp_vendor_id;//,uc_tp_fm_ver;
 
 	fts_i2c_read_reg(client, FTS_REG_VENDOR_ID, &uc_tp_vendor_id);
@@ -1927,7 +1927,7 @@ u8 fts_LockDownInfo_get(struct i2c_client *client,char *pProjectCode)
 
 	for(i = 0;i < FTS_UPGRADE_LOOP; i++)
 	{
-		auc_i2c_write_buf[2] = 0xd7;
+		auc_i2c_write_buf[2] = 0xd7;//0x7c;//0xd7
 		auc_i2c_write_buf[3] = 0xa0;//0x20;//0xa0
 		i_ret = fts_i2c_write(client, auc_i2c_write_buf, 4);
 		if (i_ret < 0)

@@ -9,8 +9,8 @@
 #include <linux/of_gpio.h>
 #include <linux/platform_device.h>
 #include <linux/err.h>
-
-
+//#include <linux/wakelock.h>
+//#include <linux/regulator/consumer.h>
 
 #include "fpc_irq.h"
 
@@ -41,8 +41,8 @@ static int hw_reset(struct  fpc_data *fpc)
 	irq_gpio = fpc->hwabs->get_val(fpc->irq_gpio);
 	dev_info(dev, "IRQ after reset %d\n", irq_gpio);
 
-	dev_info( dev, "Using GPIO#%d as IRQ.\n", fpc->irq_gpio);
-	dev_info( dev, "Using GPIO#%d as RST.\n", fpc->rst_gpio);
+	dev_info( dev, "Using GPIO#%d as IRQ.\n", fpc->irq_gpio );
+	dev_info( dev, "Using GPIO#%d as RST.\n", fpc->rst_gpio );
 
 	return 0;
 }
@@ -96,7 +96,7 @@ static DEVICE_ATTR(wakeup_enable, S_IWUSR, NULL, wakeup_enable_set);
  */
 static ssize_t irq_get(struct device *device,
 			struct device_attribute *attribute,
-			char *buffer)
+			char* buffer)
 {
 	struct fpc_data *fpc = dev_get_drvdata(device);
 	int irq = gpio_get_value(fpc->irq_gpio);
@@ -157,9 +157,9 @@ static irqreturn_t fpc_irq_handler(int irq, void *handle)
 	smp_rmb();
 
 	if (fpc->wakeup_enabled) {
-
-
-		__pm_wakeup_event(&fpc->ttw_ws, FPC_TTW_HOLD_TIME);
+		//wake_lock_timeout(&fpc->ttw_wl,
+		//			msecs_to_jiffies(FPC_TTW_HOLD_TIME));
+		__pm_wakeup_event(&fpc->ttw_ws, FPC_TTW_HOLD_TIME);//for kernel 4.9
 	}
 
 	sysfs_notify(&fpc->dev->kobj, NULL, dev_attr_irq.attr.name);
@@ -173,18 +173,18 @@ static int fpc_request_named_gpio(struct fpc_data *fpc, const char *label, int *
 	struct device_node *node = dev->of_node;
 	int rc = of_get_named_gpio(node, label, 0);
 	if (rc < 0) {
-
+		//dev_err(dev, "failed to get '%s'\n", label);
 		pr_info("failed to get '%s'\n", label);
 		return rc;
 	}
 	*gpio = rc;
 	rc = devm_gpio_request(dev, *gpio, label);
 	if (rc) {
-
+		//dev_err(dev, "failed to request gpio %d\n", *gpio);
 		pr_info("failed to request gpio %d\n", *gpio);
 		return rc;
 	}
-
+	//dev_dbg(dev, "%s %d\n", label, *gpio);
 	pr_info("%s %d\n", label, *gpio);
 	return 0;
 }
@@ -199,12 +199,12 @@ int fpc_probe(struct platform_device *pldev,
 	int irq_num;
 	int rc;
 
-
+	//dev_dbg(dev, "%s\n", __func__);
 	pr_info("%s\n", __func__);
 
 	fpc = devm_kzalloc(dev, sizeof(*fpc), GFP_KERNEL);
 	if (!fpc) {
-
+		//dev_err(dev,
 		pr_info(
 			"failed to allocate memory for struct fpc_data\n");
 		rc = -ENOMEM;
@@ -217,7 +217,7 @@ int fpc_probe(struct platform_device *pldev,
 	fpc->hwabs = fpc_gpio_ops;
 
 	if (!node) {
-
+		//dev_err(dev, "no of node found\n");
 		pr_info("no of node found\n");
 		rc = -EINVAL;
 		goto exit;
@@ -234,7 +234,7 @@ int fpc_probe(struct platform_device *pldev,
 	rc = fpc_request_named_gpio(fpc, "fpc,gpio_irq",
 			&fpc->irq_gpio);
 	if (rc) {
-
+		//dev_err(dev, "Requesting GPIO for IRQ failed with %d.\n", rc);
 		pr_info("Requesting GPIO for IRQ failed with %d.\n", rc);
 		goto exit;
 	}
@@ -242,7 +242,7 @@ int fpc_probe(struct platform_device *pldev,
 	rc = fpc_request_named_gpio(fpc, "fpc,gpio_rst",
 			&fpc->rst_gpio);
 	if (rc) {
-
+		//dev_err(dev, "Requesting GPIO for RST failed with %d.\n", rc);
 		pr_info("Requesting GPIO for RST failed with %d.\n", rc);
 		goto exit;
 	}
@@ -252,8 +252,8 @@ int fpc_probe(struct platform_device *pldev,
 	if (rc < 0)
 		goto exit;
 
-
-
+	//dev_dbg(dev, "Using GPIO#%d as IRQ.\n", fpc->irq_gpio);
+	//dev_dbg(dev, "Using GPIO#%d as RST.\n", fpc->rst_gpio);
 	pr_info("Using GPIO#%d as IRQ.\n", fpc->irq_gpio);
 	pr_info("Using GPIO#%d as RST.\n", fpc->rst_gpio);
 
@@ -268,21 +268,21 @@ int fpc_probe(struct platform_device *pldev,
 			NULL, fpc_irq_handler, irqf,
 			dev_name(dev), fpc);
 	if (rc) {
-
+		//dev_err(dev, "could not request irq %d\n", irq_num);
 		pr_info("could not request irq %d\n", irq_num);
 		goto exit;
 	}
-
+	//dev_dbg(dev, "requested irq %d\n", irq_num);
 	pr_info("requested irq %d\n", irq_num);
 
 	/* Request that the interrupt should be wakeable */
 	enable_irq_wake(irq_num);
-
-	wakeup_source_init(&fpc->ttw_ws, "fpc_ttw_ws");
+	//wake_lock_init(&fpc->ttw_wl, WAKE_LOCK_SUSPEND, "fpc_ttw_wl");
+	wakeup_source_init(&fpc->ttw_ws, "fpc_ttw_ws");//for kernel 4.9
 
 	rc = sysfs_create_group(&dev->kobj, &fpc_attribute_group);
 	if (rc) {
-
+		//dev_err(dev, "could not create sysfs\n");
 		pr_info("could not create sysfs\n");
 		goto exit;
 	}
@@ -298,7 +298,7 @@ int fpc_remove(struct platform_device *pldev)
 	struct  fpc_data *fpc = dev_get_drvdata(&pldev->dev);
 
 	sysfs_remove_group(&pldev->dev.kobj, &fpc_attribute_group);
-
+	//wake_lock_destroy(&fpc->ttw_wl);
 	wakeup_source_trash(&fpc->ttw_ws);
 	dev_info(&pldev->dev, "%s\n", __func__);
 

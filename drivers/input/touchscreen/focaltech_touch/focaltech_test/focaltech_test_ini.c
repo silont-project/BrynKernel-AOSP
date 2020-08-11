@@ -1,6 +1,5 @@
 /************************************************************************
 * Copyright (C) 2012-2018, Focaltech Systems (R)£¬All Rights Reserved.
-* Copyright (C) 2019 XiaoMi, Inc.
 *
 * File Name: focaltech_test_ini.c
 *
@@ -68,7 +67,7 @@ int ini_get_key(char *filedata, char *section, char *key, char *value)
 	int ret = -2;
 	for (i = 0; i < test_data.ini_keyword_num; i++) {
 		if (fts_strncmp(section, test_data.ini_data[i].section_name,
-						test_data.ini_data[i].section_name_len) != 0)
+					    test_data.ini_data[i].section_name_len) != 0)
 			continue;
 		//FTS_TEST_DBG("Section Name:%s, Len:%d\n",  test_data.ini_data[i].section_name, test_data.ini_data[i].section_name_len);
 		if (strlen(key) == test_data.ini_data[i].key_name_len) {

@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
- * Version: 1.4
+ * 
+ * Version: 1.4   
  * Release Date:  2015/07/10
  */
 
@@ -23,8 +23,8 @@
 #include <generated/utsrelease.h>
 #include "gt1x_generic.h"
 
-static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t count, loff_t *ppos);
-static ssize_t gt1x_tool_write(struct file *filp, const char __user *buffer, size_t count, loff_t *ppos);
+static ssize_t gt1x_tool_read(struct file *filp, char __user * buffer, size_t count, loff_t * ppos);
+static ssize_t gt1x_tool_write(struct file *filp, const char __user *buffer, size_t count, loff_t * ppos);
 
 
 static int gt1x_tool_release(struct inode *inode, struct file *filp);
@@ -32,25 +32,25 @@ static int gt1x_tool_open(struct inode *inode,struct file *file);
 
 #pragma pack(1)
 typedef struct {
-	u8 wr;
-	u8 flag;
-	u8 flag_addr[2];
-	u8 flag_val;
-	u8 flag_relation;
-	u16 circle;
-	u8 times;
-	u8 retry;
-	u16 delay;
-	u16 data_len;
-	u8 addr_len;
-	u8 addr[2];
-	u8 res[3];
-	u8 *data;
+	u8 wr;			//write read flag£¬0:R  1:W  2:PID 3:
+	u8 flag;		//0:no need flag/int 1: need flag  2:need int
+	u8 flag_addr[2];	//flag address 
+	u8 flag_val;		//flag val
+	u8 flag_relation;	//flag_val:flag 0:not equal 1:equal 2:> 3:<
+	u16 circle;		//polling cycle
+	u8 times;		//plling times
+	u8 retry;		//I2C retry times
+	u16 delay;		//delay befor read or after write
+	u16 data_len;		//data length
+	u8 addr_len;		//address length
+	u8 addr[2];		//address
+	u8 res[3];		//reserved
+	u8 *data;		//data pointer
 } st_cmd_head;
 #pragma pack()
 static st_cmd_head cmd_head;
 
-static s32 DATA_LENGTH;
+static s32 DATA_LENGTH = 0;
 static s8 IC_TYPE[16] = "GT1X";
 
 #define UPDATE_FUNCTIONS
@@ -80,11 +80,11 @@ static void set_tool_node_name(char *procname)
 int gt1x_init_tool_node(void)
 {
 	memset(&cmd_head, 0, sizeof(cmd_head));
-	cmd_head.wr = 1;
+	cmd_head.wr = 1;	//if the first operation is read, will return fail.
 	cmd_head.data = kzalloc(DATA_LENGTH_UINT, GFP_KERNEL);
 	if (NULL == cmd_head.data) {
 		GTP_ERROR("Apply for memory failed.");
-		return -EPERM;
+		return -1;
 	}
 	GTP_INFO("Alloc memory size:%d.", DATA_LENGTH_UINT);
 	DATA_LENGTH = DATA_LENGTH_UINT - GTP_ADDR_LENGTH;
@@ -94,7 +94,7 @@ int gt1x_init_tool_node(void)
 	gt1x_tool_proc_entry = proc_create(procname, 0666, NULL, &gt1x_tool_fops);
 	if (gt1x_tool_proc_entry == NULL) {
 		GTP_ERROR("CAN't create proc entry /proc/%s.", procname);
-		return -EPERM;
+		return -1;
 	} else {
 		GTP_INFO("Created proc entry /proc/%s.", procname);
 	}
@@ -108,22 +108,22 @@ void gt1x_deinit_tool_node(void)
 	cmd_head.data = NULL;
 }
 
-static s32 tool_i2c_read(u8 *buf, u16 len)
+static s32 tool_i2c_read(u8 * buf, u16 len)
 {
 	u16 addr = (buf[0] << 8) + buf[1];
 	if (!gt1x_i2c_read(addr, &buf[2], len)) {
 		return 1;
 	}
-	return -EPERM;
+	return -1;
 }
 
-static s32 tool_i2c_write(u8 *buf, u16 len)
+static s32 tool_i2c_write(u8 * buf, u16 len)
 {
 	u16 addr = (buf[0] << 8) + buf[1];
 	if (!gt1x_i2c_write(addr, &buf[2], len - 2)) {
 		return 1;
 	}
-	return -EPERM;
+	return -1;
 }
 
 static u8 relation(u8 src, u8 dst, u8 rlt)
@@ -182,7 +182,7 @@ static u8 comfirm(void)
 	for (i = 0; i < cmd_head.times; i++) {
 		if (tool_i2c_read(buf, 1) <= 0) {
 			GTP_ERROR("Read flag data failed!");
-			return -EPERM;
+			return -1;
 		}
 
 		if (true == relation(buf[GTP_ADDR_LENGTH], cmd_head.flag_val, cmd_head.flag_relation)) {
@@ -196,7 +196,7 @@ static u8 comfirm(void)
 
 	if (i >= cmd_head.times) {
 		GTP_ERROR("Didn't get the flag to continue!");
-		return -EPERM;
+		return -1;
 	}
 
 	return 0;
@@ -210,13 +210,13 @@ Input:
 Output:
     Return write length.
 ********************************************************/
-static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_t len, loff_t *data)
+static ssize_t gt1x_tool_write(struct file *filp, const char __user * buff, size_t len, loff_t * data)
 {
 	u64 ret = 0;
 	u8 temp_data = 0;
-
+	
 	GTP_DEBUG_FUNC();
-
+	//GTP_DEBUG_ARRAY((u8 *) buff, len);
 
 	ret = copy_from_user(&cmd_head, buff, CMD_HEAD_LENGTH);
 	if (ret) {
@@ -251,10 +251,10 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 		if (1 == cmd_head.flag) {
 			if (comfirm()) {
 				GTP_ERROR("[WRITE]Comfirm fail!");
-				return -EPERM;
+				return -1;
 			}
 		} else if (2 == cmd_head.flag) {
-
+			//Need interrupt!
 		}
 
 		addr = (cmd_head.addr[0] << 8) + cmd_head.addr[1];
@@ -265,7 +265,7 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 			ret = copy_from_user(&cmd_head.data[GTP_ADDR_LENGTH], &buff[CMD_HEAD_LENGTH + pos], len);
 			if (ret) {
 				GTP_ERROR("[WRITE]copy_from_user failed.");
-				return -EPERM;
+				return -1;
 			}
 			cmd_head.data[0] = ((addr >> 8) & 0xFF);
 			cmd_head.data[1] = (addr & 0xFF);
@@ -274,7 +274,7 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 
 			if (tool_i2c_write(cmd_head.data, len + GTP_ADDR_LENGTH) <= 0) {
 				GTP_ERROR("[WRITE]Write data failed!");
-				return -EPERM;
+				return -1;
 			}
 			addr += len;
 			pos += len;
@@ -286,21 +286,21 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 		}
 
 		return cmd_head.data_len + CMD_HEAD_LENGTH;
-	} else if (3 == cmd_head.wr) {
+	} else if (3 == cmd_head.wr) {	//gt1x unused
 
 		memcpy(IC_TYPE, cmd_head.data, cmd_head.data_len);
 		return cmd_head.data_len + CMD_HEAD_LENGTH;
-	} else if (5 == cmd_head.wr) {
+	} else if (5 == cmd_head.wr) {	//?
 
-
+		//memcpy(IC_TYPE, cmd_head.data, cmd_head.data_len);
 		return cmd_head.data_len + CMD_HEAD_LENGTH;
-	} else if (7 == cmd_head.wr) {
+	} else if (7 == cmd_head.wr) {	//disable irq!
 		gt1x_irq_disable();
 #if GTP_ESD_PROTECT
 		gt1x_esd_switch(SWITCH_OFF);
 #endif
 		return CMD_HEAD_LENGTH;
-	} else if (9 == cmd_head.wr) {
+	} else if (9 == cmd_head.wr) {	//enable irq!
 		gt1x_irq_enable();
 #if GTP_ESD_PROTECT
 		gt1x_esd_switch(SWITCH_ON);
@@ -310,7 +310,7 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 		ret = copy_from_user(&cmd_head.data[GTP_ADDR_LENGTH], &buff[CMD_HEAD_LENGTH], cmd_head.data_len);
 		if (ret) {
 			GTP_ERROR("copy_from_user failed.");
-			return -EPERM;
+			return -1;
 		}
 
 		if (cmd_head.data[GTP_ADDR_LENGTH]) {
@@ -329,7 +329,7 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 	} else if (15 == cmd_head.wr) {
 	    struct task_struct *thrd = NULL;
 		memset(cmd_head.data, 0, cmd_head.data_len + 1);
-
+		//memcpy(cmd_head.data, &buff[CMD_HEAD_LENGTH], cmd_head.data_len);
 		ret = copy_from_user(cmd_head.data, &buff[CMD_HEAD_LENGTH], cmd_head.data_len);
 		if (ret) {
 			GTP_ERROR("copy_from_user failed.");
@@ -343,14 +343,14 @@ static ssize_t gt1x_tool_write(struct file *filp, const char __user *buff, size_
 	return CMD_HEAD_LENGTH;
 }
 
-static u8 devicecount;
+static u8 devicecount = 0;
 static int gt1x_tool_open(struct inode *inode,struct file *file)
 {
         if (devicecount > 0) {
             return -ERESTARTSYS;
             GTP_ERROR("tools open failed!");
         }
-
+        
         devicecount++;
         return 0;
 }
@@ -368,12 +368,12 @@ Input:
 Output:
     Return read length.
 ********************************************************/
-static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t count, loff_t *ppos)
+static ssize_t gt1x_tool_read(struct file *filp, char __user * buffer, size_t count, loff_t * ppos)
 {
 	s32 ret = 0;
-
+	
 	GTP_DEBUG_FUNC();
-	if (*ppos) {
+	if(*ppos) {
 		GTP_DEBUG("[PARAM]size: %zd, *ppos: %d", count, (int)*ppos);
 		*ppos = 0;
 		return 0;
@@ -381,7 +381,7 @@ static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t cou
 
 	if (cmd_head.wr % 2) {
 		GTP_ERROR("[READ] invaild operator fail!");
-		return -EPERM;
+		return -1;
 	} else if (!cmd_head.wr) {
 	    /* general  i2c read  */
 		u16 addr, data_len, len, loc;
@@ -389,10 +389,10 @@ static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t cou
 		if (1 == cmd_head.flag) {
 			if (comfirm()) {
 				GTP_ERROR("[READ]Comfirm fail!");
-				return -EPERM;
+				return -1;
 			}
 		} else if (2 == cmd_head.flag) {
-
+			//Need interrupt!
 		}
 
 		addr = (cmd_head.addr[0] << 8) + cmd_head.addr[1];
@@ -412,13 +412,13 @@ static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t cou
 			cmd_head.data[1] = (addr & 0xFF);
 			if (tool_i2c_read(cmd_head.data, len) <= 0) {
 				GTP_ERROR("[READ]Read data failed!");
-				return -EPERM;
+				return -1;
 			}
-
+			//memcpy(&buffer[loc], &cmd_head.data[GTP_ADDR_LENGTH], len);
             if (copy_to_user(&buffer[loc], &cmd_head.data[GTP_ADDR_LENGTH], len))
             {
                 GTP_ERROR("[Read]copy_to_user failed.");
-            	return -EPERM;
+            	return -1;
             }
 			data_len -= len;
 			addr += len;
@@ -432,7 +432,7 @@ static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t cou
 		*ppos += sizeof(IC_TYPE);
 		GTP_DEBUG("Return ic type:%s len:%d.", IC_TYPE, (int)sizeof(IC_TYPE));
 		return ret;
-	} else if (4 == cmd_head.wr)
+	} else if (4 == cmd_head.wr) 
 	{
 		u8 progress_buf[4];
 	    /* read fw update progress */
@@ -443,24 +443,24 @@ static ssize_t gt1x_tool_read(struct file *filp, char __user *buffer, size_t cou
 		if (copy_to_user(buffer, progress_buf, 4))
 		{
 			GTP_ERROR("[Read]copy_to_user failed.");
-            return -EPERM;
+            return -1;
 		}
 		*ppos += 4;
 		return 4;
 	} else if (6 == cmd_head.wr) {
-
-		return -EPERM;
-	} else if (8 == cmd_head.wr) {
+		//Read error code!
+		return -1;
+	} else if (8 == cmd_head.wr) {	
 	    /* Read driver version */
 		s32 tmp_len;
 		tmp_len = strlen(GTP_DRIVER_VERSION);
-
+		//memcpy(buffer, GTP_DRIVER_VERSION, tmp_len);
 		if (copy_to_user(buffer, GTP_DRIVER_VERSION, tmp_len) || copy_to_user(&buffer[tmp_len], "\n", 1))
 		{
 			GTP_ERROR("[Read]copy_to_user failed.");
-            return -EPERM;
+            return -1;
 		}
-
+		//buffer[tmp_len] = 0;		
 		*ppos += tmp_len + 1;
 		return (tmp_len + 1);
 	}

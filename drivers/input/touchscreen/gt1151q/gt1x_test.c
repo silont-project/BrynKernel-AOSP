@@ -1,19 +1,19 @@
 /* drivers/input/touchscreen/gt1x_test.c
- *
-
+ * 
+ 
  * 2010 - 2014 Shenzhen Huiding Technology Co.,Ltd.
- *
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be a reference
- * to you, when you are integrating the GOODiX's CTP IC into your system,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This program is distributed in the hope that it will be a reference 
+ * to you, when you are integrating the GOODiX's CTP IC into your system, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
  * General Public License for more details.
- *
+ * 
  * Version: 1.0
  * Release Date: 2014/11/14
  *
@@ -25,8 +25,8 @@
 #include "dsp_isp.h"
 
 #define REG_CONFIG_BASE       0x8050
-#define REG_DRV_SEN_CNT       0x8086
-#define REG_MATRIX_DRV_SEN    0x806E
+#define REG_DRV_SEN_CNT       0x8086	//driver :0x8062+0x8063  Sensor :0x8064
+#define REG_MATRIX_DRV_SEN    0x806E	//driver :0x8062+0x8063  Sensor :0x8064
 #define REG_MODULE_SWITCH_DK  0x8057
 #define REG_MODULE_SWITCH_SK  0x80A1
 
@@ -35,14 +35,14 @@
 #define CONFIG_GTP_ESD_PROTECT       1
 
 static struct proc_dir_entry *gt1x_ito_test_proc;
+//static struct proc_dir_entry *gt1x_android_touch_proc;
 
-
-
+//static strShortRecord r_data;
 static unsigned char *upload_short_data;
 static unsigned char *warn_short_data;
 static unsigned short *self_data;
-static bool drv_sen_exchange;
-static char *self_test_state;
+static bool drv_sen_exchange = false;
+static char* self_test_state = NULL;
 
 static const unsigned char gt1143_sen_map[40] = {
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 24, 26, 28, 30,
@@ -51,7 +51,7 @@ static const unsigned char gt1143_sen_map[40] = {
 
 struct system_variable sys;
 static mm_segment_t old_fs;
-static loff_t file_pos;
+static loff_t file_pos = 0;
 extern void gt1x_esd_switch(s32 on);
 
 FILE *fopen(const char *path, const char *mode)
@@ -69,7 +69,7 @@ FILE *fopen(const char *path, const char *mode)
 
 		}
 
-		if (filp == NULL){
+		if(filp == NULL){
 			GTP_ERROR("open file as a+ mode filp == NULL 1\n");
 		}
 
@@ -90,13 +90,13 @@ FILE *fopen(const char *path, const char *mode)
 	old_fs = get_fs();
 
 	set_fs(KERNEL_DS);
-	if (filp == NULL){
+	if(filp == NULL){
 		GTP_ERROR("open file as a+ mode filp == NULL 2\n");
 	}
 	return filp;
 }
 
-int fclose(FILE *filp)
+int fclose(FILE * filp)
 {
 	filp_close(filp, NULL);
 
@@ -107,17 +107,17 @@ int fclose(FILE *filp)
 	return 0;
 }
 
- size_t fread(void *buffer, size_t size, size_t count, FILE *filp)
+ size_t fread(void *buffer, size_t size, size_t count, FILE * filp)
 {
 	return filp->f_op->read(filp, (char *)buffer, count, &filp->f_pos);
-}
+} 
 
-size_t fwrite(const void *buffer, size_t size, size_t count, FILE *filp)
-{
+size_t fwrite(const void *buffer, size_t size, size_t count, FILE * filp)
+{	
 	ssize_t  writeCount = -1;
 	GTP_DEBUG("[%s] enter",__func__);
 	writeCount = vfs_write(filp, (char __user *)buffer, size, &filp->f_pos);
-
+	//file_pos = file_pos + size;
 	GTP_DEBUG("[%s] exit",__func__);
 	return writeCount;
 }
@@ -329,7 +329,7 @@ int disable_irq_esd(void)
 
 #if CONFIG_GTP_ESD_PROTECT
 	gt1x_esd_switch(SWITCH_OFF);
-	msleep(2000);
+	msleep(2000); //add delay 2s
 #endif
 
 	return 1;
@@ -382,7 +382,7 @@ int parse_config(unsigned char *config)
 
 		sys.key_number = (config[46] & 0x1F) + (config[47] & 0x1F) + (config[48] & 0xFF) - sys.sc_driver_num * sys.sc_sensor_num;
 
-                			if (config[0x80dc - 0x8050] < 20)
+                			if(config[0x80dc - 0x8050] < 20)
 			{
 				drv_sen_exchange = true;
 			}
@@ -483,7 +483,7 @@ int check_version(unsigned char *ini_version)
 
 		GTP_ERROR("PID not match.");
 
-		return -EPERM;
+		return -1;
 
 	}
 
@@ -520,7 +520,7 @@ int read_raw_data(unsigned short *data, int len)
 
 	u8 flag = 0x00;
 	GTP_ERROR("[%s] enter.\n",__func__);
-
+	//msleep(1000);
 	if (data == NULL || len < sys.sensor_num * sys.driver_num) {
 
 		GTP_ERROR("the parameters is null.");
@@ -561,7 +561,7 @@ int read_raw_data(unsigned short *data, int len)
 
 		GTP_ERROR("wait 0x80 timeout.");
 
-		return -EPERM;
+		return -1;
 
 	}
 
@@ -572,7 +572,7 @@ int read_raw_data(unsigned short *data, int len)
 	rawdata = (unsigned short *)(&buf[sys.sensor_num * sys.driver_num * 2]);
 
 	GTP_ERROR("0x%X read %d*%d data", sys.reg_rawdata_base, sys.sensor_num, sys.driver_num);
-
+	//msleep(1000);
 	ret = gt1x_i2c_read(sys.reg_rawdata_base, buf, sys.sensor_num * sys.driver_num * 2);
 
 	if (ret < 0) {
@@ -594,14 +594,14 @@ int read_raw_data(unsigned short *data, int len)
 	}
 
 	memcpy(data, rawdata, sys.sensor_num * sys.driver_num * 2);
-       if (drv_sen_exchange)
+       if(drv_sen_exchange)
        {
     	   memcpy(&data[0],&rawdata[sys.sc_sensor_num*sys.sc_driver_num/2],sys.sc_sensor_num*sys.sc_driver_num);
     	   memcpy(&data[sys.sc_sensor_num*sys.sc_driver_num/2],&rawdata[0],sys.sc_sensor_num*sys.sc_driver_num);
        }
 	free(buf);
 	GTP_ERROR("[%s]exit.\n",__func__);
-
+	//msleep(1000);
 	return sys.sensor_num * sys.driver_num;
 }
 
@@ -683,7 +683,7 @@ int enter_update_mode_noreset(void)
 
 		GTP_ERROR("set scramble fail.");
 
-		return -EPERM;
+		return -1;
 
 	}
 	/* clr bu */
@@ -694,7 +694,7 @@ int enter_update_mode_noreset(void)
 	if (ret <= 0) {
 
 		GTP_ERROR("clr bu fail.");
-		return -EPERM;
+		return -1;
 	}
 
 	buf[0] = 0x04;
@@ -788,7 +788,7 @@ void test_to_show(unsigned char *test_result, unsigned short upload_cnt)
 	}
 }
 
-void write_test_params_bak(u8 *config)
+void write_test_params_bak(u8 * config)
 {
 
 	u8 data[sys.max_driver_num + sys.max_sensor_num], i, m;
@@ -835,7 +835,7 @@ void write_test_params_bak(u8 *config)
 
 		for (i = 0, m = 0; i < 20; i++) {
 
-			if ((config[drv_offest + i] >= 20) && (config[drv_offest + i] < 40))
+			if ((config[drv_offest + i] >= 20) && (config[drv_offest + i] < 40))	//drv channel
 				data[sys.max_sensor_num + m++] = gt1143_sen_map[config[drv_offest + i]];
 
 		}
@@ -893,17 +893,17 @@ void write_test_params(unsigned char *config)
 	unsigned char tmp[sys.max_driver_num + sys.max_sensor_num], k;
 	unsigned short drv_offest, sen_offest;
 	unsigned char chksum = 0;
-
+	//gt900_short_threshold
 	data[0] = (gt900_short_threshold >> 8) & 0xff;
 	data[1] = gt900_short_threshold & 0xff;
 	i2c_write_data(0x8808, data, 2);
 
-
+	//ADC Read Delay
 	data[0] = (150 >> 8) & 0xff;
 	data[1] = 150 & 0xff;
 	i2c_write_data(0x880C, data, 2);
 
-
+	//DiffCode Short Threshold
 	data[0] = (20 >> 8) & 0xff;
 	data[1] = 20 & 0xff;
 	i2c_write_data(0x880A, data, 2);
@@ -976,7 +976,7 @@ static long _cal_resistance(u16 self_data, u8 master, u8 slave, u16 shor_code)
 	return (long)self_data *81 * FLOAT_AMPLIFIER / shor_code - (81 * FLOAT_AMPLIFIER);
 }
 
-static int _save_short_data(u8 *short_data, strShortRecord r_data, u16 short_code)
+static int _save_short_data(u8 * short_data, strShortRecord r_data, u16 short_code)
 {
 
 	u8 n, cnt;
@@ -1039,10 +1039,10 @@ static int _calculate_short_resistance_with_gnd(u16 short_code, u8 pos)
 
 	}
 
-	if ((short_code & (0x8000)) == 0)
-		r = (52662850) * 10 / (short_code & (~0x8000)) - 40 * FLOAT_AMPLIFIER * 10;
-	else
-
+	if ((short_code & (0x8000)) == 0)	//short to GND
+		r = (52662850) * 10 / (short_code & (~0x8000)) - 40 * FLOAT_AMPLIFIER * 10;	//52662.85/code-40
+	else			//short to VDD
+		//r = ( 1/(((float)(short_code&(~0x8000)))/0.9*0.7/1024/(sys_avdd-0.9)/40) ) -40;
 		r = 40 * 9 * 1024 * (sys_avdd - 9) * FLOAT_AMPLIFIER / (short_code & (~0x8000) * 7) - 40 * FLOAT_AMPLIFIER * 10;
 
 	r *= 2;
@@ -1058,7 +1058,7 @@ static int _calculate_short_resistance_with_gnd(u16 short_code, u8 pos)
 
 	if (pos < sys.max_driver_num * 2) {
 
-
+		//m = ChannelPackage_TX[m] | _CHANNEL_TX_FLAG;
 		m = m | _CHANNEL_TX_FLAG;
 
 		r_th = gt900_drv_gnd_resistor_threshold;
@@ -1077,12 +1077,12 @@ static int _calculate_short_resistance_with_gnd(u16 short_code, u8 pos)
 
 		upload_short_data[totals * 4 + 1] = m;
 
-		upload_short_data[totals * 4 + 2] = sys.max_driver_num + 1;
+		upload_short_data[totals * 4 + 2] = sys.max_driver_num + 1;	//short with GND
 		upload_short_data[totals * 4 + 3] = (short_code >> 8) & 0xff;
 
 		upload_short_data[totals * 4 + 4] = short_code & 0xff;
 
-
+		//if (gt900_chk_cfg_chn(m, m) == 1)
 		{
 
 			if (totals < _GT9_UPLOAD_SHORT_TOTAL) {
@@ -1116,7 +1116,7 @@ static int _calculate_short_resistance(strShortRecord r_data, unsigned short sho
 
 		return _CHANNEL_PASS;
 
-
+	//check whether calculate resistance
 	j = r_data.position;
 
 	if (j > (sys.max_driver_num + sys.max_sensor_num)) {
@@ -1145,7 +1145,7 @@ static int _calculate_short_resistance(strShortRecord r_data, unsigned short sho
 	}
 	short_code = (r >= 0 ? r : 0);
 
-
+	//priority to upload the small resistance
 	if (gt900_resistor_warn_threshold < short_r_th) {
 
 		warn_threshold = short_r_th;
@@ -1162,18 +1162,18 @@ static int _calculate_short_resistance(strShortRecord r_data, unsigned short sho
 
 	if (short_code < (short_r_th * 10)) {
 
-
+		//GTP_ERROR("uplaod short position %d,master 0x%X,slave 0x%X",r_data.position,r_data.master,r_data.slave);
 		test_error_code |= _save_short_data(upload_short_data, r_data, short_code);
 
 	}
 
 	else if (short_code < (warn_threshold * 10)) {
 
-
-
-
-
-
+		//if (chk_short_data(r_data.master, r_data.slave) == 0) //GT950
+		//{
+		//      return 0;
+		//}
+		//GTP_ERROR("uplaod short code %d,master 0x%X,slave 0x%X",short_code,r_data.master,r_data.slave);
 		test_error_code |= _save_short_data(warn_short_data, r_data, short_code);
 
 	}
@@ -1190,8 +1190,8 @@ int short_test_analysis(unsigned char *result, int t_size)
 
 	unsigned char short_status[3];
 
-
-
+	//unsigned char* upload_short_data;
+	//unsigned short* self_data;
 	unsigned char short_flag, i, j;
 
 	unsigned short short_code, result_addr;
@@ -1199,7 +1199,7 @@ int short_test_analysis(unsigned char *result, int t_size)
 	int offest, length, test_error_code;
 	strShortRecord r_data;
 	test_error_code = _CHANNEL_PASS;
-	i2c_read_data(0x8801, &short_flag, 1);
+	i2c_read_data(0x8801, &short_flag, 1);	//the test results
 	if ((short_flag & 0x0F) == 0) {
 
 		GTP_ERROR("No short.");
@@ -1260,14 +1260,14 @@ int short_test_analysis(unsigned char *result, int t_size)
 
 		self_data[i] = ((tmp[i * 2] << 8) + tmp[i * 2 + 1]) & 0x7fff;
 
-
+		// GTP_ERROR("self_data[%d]%d",i,self_data[i]);
 	}
 
 	i2c_read_data(0x8802, short_status, 3);
 
 	GTP_ERROR("Tx&Tx:%d,Rx&Rx:%d,Tx&Rx:%d", short_status[0], short_status[1], short_status[2]);
 
-
+	//drv&drv
 	result_addr = 0x8800 + 0x60;
 
 	for (i = 0; i < short_status[0]; i++) {
@@ -1286,7 +1286,7 @@ int short_test_analysis(unsigned char *result, int t_size)
 
 				r_data.position = r_data.master & 0x7f;
 
-				r_data.slave = j | _CHANNEL_TX_FLAG;
+				r_data.slave = j | _CHANNEL_TX_FLAG;	//TX
 				r_data.short_code = short_code;
 
 				test_error_code |= _calculate_short_resistance(r_data, gt900_drv_drv_resistor_threshold, 0);
@@ -1299,10 +1299,10 @@ int short_test_analysis(unsigned char *result, int t_size)
 
 	}
 
-
+	//sen&sen
 	result_addr = 0x9120;
 
-	for (i = 0; i < short_status[1]; i++)
+	for (i = 0; i < short_status[1]; i++)	//RX
 	{
 
 		length = sys.short_head + sys.max_sensor_num * 2 + 2;
@@ -1315,7 +1315,7 @@ int short_test_analysis(unsigned char *result, int t_size)
 
 			if (j == i || (j < i && (j & 0x01) == 0))
 
-				continue;
+				continue;	// The first one have no last pin.
 
 			short_code = (tmp[sys.short_head + j * 2] << 8) + tmp[sys.short_head + j * 2 + 1];
 
@@ -1339,10 +1339,10 @@ int short_test_analysis(unsigned char *result, int t_size)
 
 	}
 
-
+	//sen&drv
 	result_addr = 0x99e0;
 
-	for (i = 0; i < short_status[2]; i++)
+	for (i = 0; i < short_status[2]; i++)	//Tx-RX
 	{
 
 		length = sys.short_head + sys.max_sensor_num * 2 + 2;
@@ -1486,7 +1486,7 @@ s32 load_code_and_check(unsigned char *codes, int size)
 
 	}
 
-	return -EPERM;
+	return -1;
 
 }
 
@@ -1503,11 +1503,11 @@ int auto_find_ini(char *findDir, char *format, char *inipath)
 	char tmp[128];
 	memset(tmp, 0, sizeof(tmp));
 
-	if (findDir == NULL){
+	if(findDir == NULL){
 		WARNING("dir is null.");
 		return PARAMETERS_ILLEGL;
 	}
-
+	
 	sprintf((char *)tmp, "/system/etc/test_sensor_%d.ini", gt1x_version.sensor_id);
 
     pfile = filp_open(tmp, O_RDONLY, 0);
@@ -1524,28 +1524,28 @@ int auto_find_ini(char *findDir, char *format, char *inipath)
 		WARNING("Not found %s.ini in %s",inipath);
 		return -3;
 		}*/
-
-
+	
+	
 	memcpy(inipath, tmp, sizeof(tmp));
 	return 1;
 }
 
 
 
-unsigned int my_getline(char *buf, int size, FILE *fp)
+unsigned int my_getline(char *buf, int size, FILE * fp)
 {
 
 	size_t bytes;
 	unsigned int i = 0;
 	GTP_ERROR("[%s] enter.\n",__func__);
-	if (fp == NULL){
-		return -EPERM;
+	if(fp == NULL){
+		return -1;
 	}
-	if (fp->f_op == NULL){
-		return -EPERM;
+	if(fp->f_op == NULL){
+		return -1;
 	}
 	while (i < size) {
-
+	//while (!feof(fp)) {
 		bytes = vfs_read(fp, &buf[i], 1, &fp->f_pos);
 		if (bytes < 0) {
 			GTP_ERROR("getline read file failed\n.");
@@ -1554,7 +1554,7 @@ unsigned int my_getline(char *buf, int size, FILE *fp)
 		}
 
 		if (buf[i] == ' ') {
-
+			//GTP_ERROR("before continue");
 			continue;
 
 		}
@@ -1587,7 +1587,7 @@ int getrid_space(char *data, int len)
 
 	unsigned int count = 0;
 	buf = (unsigned char *)malloc(len + 5);
-
+	
 	if (buf == NULL) {
 
 		return MEMORY_ERR;
@@ -1596,10 +1596,10 @@ int getrid_space(char *data, int len)
 
 	for (i = 0; i < len; i++) {
 
-
+		//     if (space_count > 10)
 		{
 
-
+			//         break;
 		}
 
 		if (data[i] == ' ' || data[i] == '\r' || data[i] == '\n') {
@@ -1722,7 +1722,7 @@ int ini_read(char *file, const char *key, char *value)
 	}
 	inode = fp->f_inode;
 	fsize = inode->i_size;
-
+	//buf = (char *)malloc(1250);
 	buf = (char *)malloc(fsize);
 
 	if (buf == NULL) {
@@ -1890,11 +1890,11 @@ int ini_read_text(char *file, const char *key, unsigned char *text)
 
 		text[i] = (unsigned char)atohex((char *)&tmp[i * 5]);
 
-
+		//GTP_ERROR("text[%d]:0x%x\n", i,text[i]);
 	}
 	GTP_ERROR("RAW KEY value:%s\n", tmp);
 
-
+	// DEBUG_ARRAY(text, i);
 	free(tmp);
 
 	return i;
@@ -1933,9 +1933,9 @@ int ini_read_cfg(char *file, const char *key, unsigned char *text)
 
 		GTP_ERROR("text[%d]:0x%x\n", i,text[i]);
 	}
+	//GTP_ERROR("RAW KEY value:%s\n", tmp);
 
-
-
+	// DEBUG_ARRAY(text, i);
 	free(tmp);
 
 	return i;
@@ -1961,7 +1961,7 @@ int ini_read_hex(char *file, const char *key)
 	}
 
 	memset(tmp, 0, 32);
-
+	
 
 	ret = ini_read(file, key, tmp);
 
@@ -1975,7 +1975,7 @@ int ini_read_hex(char *file, const char *key)
 
 	len = strlen((const char *)tmp);
 
-
+	//GTP_ERROR("len :%d\n", len);
 	for (i = 1; i < (len / 2); i++) {
 
 		value |= atohex(&tmp[2 * i]) << (8 * ((len / 2) - i - 1));
@@ -2007,16 +2007,16 @@ int init_chip_type(void)
 		return MEMORY_ERR;
 	}
 
-
-
-	sys.reg_rawdata_base = 0xB5F8;
+	//sys.reg_rawdata_base = 0xB334; //
+	//sys.reg_rawdata_base = 0xB798; //GT1151 rawdata addr
+	sys.reg_rawdata_base = 0xB5F8; //GT1151Q rawdata addr
 	sys.key_offest = 83;
 
 	sys.config_length = 367;
 	sys.max_sensor_num = 32;
 	sys.max_driver_num = 32;
 	sys.short_head = 4;
-
+	//add for init write position 0
 	file_pos = 0;
 	if (!strncmp((const char *)gt1x_version.product_id, "1143", 4)) {
 		sys.chip_type = _GT1143;
@@ -2029,7 +2029,7 @@ int init_chip_type(void)
 		sys.chip_type = _GT9P;
 	}
 	ret = read_config(largebuf, sys.config_length);
-	if (ret < 0){
+	if(ret < 0){
 		GTP_ERROR("i2c communication error. ret =%d\n", ret);
 		free(largebuf);
 		return ret;
@@ -2132,16 +2132,16 @@ static int gtp_sysfs_openshort_show(struct seq_file *file, void* data)
 		}
 	}
 
-	GTP_ERROR("This is gtp_sysfs_openshort_show result len = %ld\n\n",len);
+	GTP_ERROR("This is gtp_sysfs_openshort_show result len = %ld\n\n",len); 
 	seq_printf(file,"%s",ito_buf);
 	free(ito_buf);
 	free(result);
 	return 0;
 }*/
 
-static int gtp_sysfs_openshort_show(struct seq_file *file, void *data)
+static int gtp_sysfs_openshort_show(struct seq_file *file, void* data)
 {
-	if (NULL==self_test_state || 0==strcmp(self_test_state,"0")){
+	if(NULL==self_test_state || 0==strcmp(self_test_state,"0")){
 		seq_printf(file,"%s\n","0");
 		goto EXIT;
 	}
@@ -2163,42 +2163,42 @@ static ssize_t gtp_sysfs_openshort_store(struct file *file, const char __user *b
 	s32 ito_result = 0;
 
 	ito_buf = (unsigned char *)malloc(count);
-	if (ito_buf == NULL){
+	if(ito_buf == NULL){
 		GTP_ERROR("ito_buf malloc fail!!!");
 		ret = -EFAULT;
         goto fail;
 	}
-
+	
     if (copy_from_user(ito_buf, buf, count))
     {
         GTP_ERROR("copy from user error!!");
 		ret = -EFAULT;
         goto fail;
     }
-
-	if ( !(strstr(ito_buf,"i2c") || strstr(ito_buf,"open") || strstr(ito_buf,"short")))
+	
+	if( !(strstr(ito_buf,"i2c") || strstr(ito_buf,"open") || strstr(ito_buf,"short")))
 	{
 		self_test_state = "0";
 		ret = -EFAULT;
         goto fail;
 	}
-
+	
 	ret = init_chip_type();
-	if (ret < 0){
+	if(ret < 0){
 		ito_result |=_I2C_ERR;
 	}else{
 		result = (unsigned char *)malloc(600 + sys.sensor_num * sys.driver_num * 2);
-		if (result == NULL){
+		if(result == NULL){
 		GTP_ERROR("result malloc fail!!!");
 		free(ito_buf);
 		ret = -EFAULT;
         goto error;
 		}
-
+	
 		ito_result = open_short_test(result);
 		GTP_ERROR("ito_result = %x",ito_result);
 	}
-
+	
 	if (ito_result == _CHANNEL_PASS) {
 		self_test_state = "2";
 	}else {
@@ -2208,12 +2208,12 @@ static ssize_t gtp_sysfs_openshort_store(struct file *file, const char __user *b
 
 error:
     free(result);
-fail:
+fail:    
     free(ito_buf);
 	return ret;
 }
 
-static int gtp_sysfs_openshort_open (struct inode *inode, struct file *file)
+static int gtp_sysfs_openshort_open (struct inode* inode, struct file* file)
 {
     return single_open(file, gtp_sysfs_openshort_show, NULL);
 }
@@ -2236,13 +2236,13 @@ return:
 s32 gtp_test_sysfs_init(void)
 {
 	GTP_INFO("%s:ENTER FUNC ---- %d\n",__func__,__LINE__);
-
+	//gt1x_android_touch_proc = proc_mkdir(GT1X_ANDROID_TOUCH, NULL);
 	gt1x_ito_test_proc = proc_create(GT1X_ITO_TEST, 0777,
 					      NULL, &ito_test_ops);
 
 	if (!gt1x_ito_test_proc){
 		GTP_INFO("create proc entry %s failed",GT1X_ITO_TEST);
-		return -EPERM;
+		return -1;
 	}
 	else{
 		GTP_INFO("create proc entry %s success",GT1X_ITO_TEST);

@@ -1,6 +1,5 @@
 /************************************************************************
 * Copyright (C) 2012-2018, Focaltech Systems (R)£¬All Rights Reserved.
-* Copyright (C) 2019 XiaoMi, Inc.
 *
 * File Name: focaltech_flash.h
 *
@@ -84,7 +83,7 @@
 #define FTS_HEADER_LEN                              32
 #define FTS_FW_BIN_FILEPATH                         "/sdcard/"
 
-#define FTS_LOCKDOWN_LEN                             128
+#define FTS_LOCKDOWN_LEN                             128 //add lockdowninfo by likang @20171010
 #define FTS_FW_NAME_MAX_LEN                          50  //add lockdowninfo by likang @20171010
 
 #define FTS_ROMBOOT_CMD_ECC_NEW_LEN                 7

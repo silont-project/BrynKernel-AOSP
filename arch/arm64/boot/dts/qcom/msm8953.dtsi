@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015-2019, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -53,7 +53,7 @@
 					dev = "/dev/block/platform/soc/7824900.sdhci/by-name/vendor";
 					type = "ext4";
 					mnt_flags = "ro,barrier=1,discard";
-					fsmgr_flags = "wait";
+					fsmgr_flags = "wait,avb";
 					status = "ok";
 				};
 
@@ -71,8 +71,8 @@
 			no-map;
 			reg = <0x0 0x85b00000 0x0 0xd00000>;
 		};
-    */
-        other_ext_mem: other_ext_region@0 {
+	*/
+		other_ext_mem: other_ext_region@0 {
 			compatible = "removed-dma-pool";
 			no-map;
 			reg = <0x0 0x84A00000 0x0 0x1E00000>;
@@ -148,13 +148,11 @@
 
 		adsp_shmem_device_mem: adsp_shmem_device_region@0xc0100000 {
 			compatible = "shared-dma-pool";
-			label = "adsp_shmem_device_mem";
 			reusable;
 			alloc-ranges = <0x0 0xc0100000 0x0 0x08200000>;
 			alignment = <0 0x400000>;
 			size = <0 0x800000>;
 		};
-
 
 		gpu_mem: gpu_region@0 {
 			compatible = "shared-dma-pool";
@@ -828,7 +826,7 @@
 		dma-names = "tx", "rx";
 		status = "ok";
 	clock-frequency = <400000>;
-        goodix@14{
+	goodix@14{
 		compatible = "goodix,gt1x";
 		reg = <0x14>;
 		interrupt-parent = <&tlmm>;
@@ -842,9 +840,9 @@
 		pinctrl-1 = <&ts_int_output_high>;
 		pinctrl-2 = <&ts_int_output_low>;
 		pinctrl-3 = <&ts_int_input>;
-                pinctrl-4 = <&ts_as_reset>;
-                pinctrl-5 = <&ts_reset_suspend>;
-                pinctrl-6 = <&ts_reset_active>;
+		pinctrl-4 = <&ts_as_reset>;
+		pinctrl-5 = <&ts_reset_suspend>;
+		pinctrl-6 = <&ts_reset_active>;
 		goodix,reset-gpio = <&tlmm 64 0x00>;
 		goodix,irq-gpio = <&tlmm 65 0x00>;
 		goodix,default-config0 = [
@@ -875,7 +873,7 @@
 			00  00  00  00  00  B7  70
 			];
 	};
-          
+
 	focaltech@38{
 		compatible = "focaltech,fts";
 		reg = <0x38>;
@@ -884,11 +882,11 @@
 		vdd-supply = <&pm8953_l10>;
 		vcc_i2c-supply = <&pm8953_l6>;
 		/* pins used by touchscreen */
-        pinctrl-names = "pmx_ts_irqrst_active","pmx_ts_irqrst_suspend",
-            "pmx_ts_irqrst_release";
-        pinctrl-0 = <&ts_int_active &ts_reset_active>;
-        pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
-        pinctrl-2 = <&ts_as_int &ts_as_reset>;
+		pinctrl-names = "pmx_ts_irqrst_active","pmx_ts_irqrst_suspend",
+		    "pmx_ts_irqrst_release";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		pinctrl-2 = <&ts_as_int &ts_as_reset>;
 		focaltech,name = "fts_ts";
 		focaltech,reset-gpio = <&tlmm 64 0x00>;
 		//focaltech,power_ldo-gpio = <&tlmm 0 0x00>;
@@ -2348,14 +2346,19 @@
 		pinctrl-names = "fpc1020_reset_reset",
 			"fpc1020_reset_active",
 			"fpc1020_irq_active",
-            "fpc1020_ldo_2v8_en";
+			"fpc1020_ldo_2v8_en";
 		pinctrl-0 = <&fp_reset_low>;
 		pinctrl-1 = <&fp_reset_high>;
 		pinctrl-2 = <&fp_irq_active>;
 		pinctrl-3 = <&fp_ldo_2v8_en>;
 	};
 
-    goodix_fp {
+	simtray {
+		compatible = "xiaomi,simtray-status";
+		status-gpio = <&tlmm 54 0x00>;
+	};
+
+	goodix_fp {
 		status = "ok";
 		compatible = "goodix,fingerprint";
 		interrupt-parent = <&tlmm>;
@@ -2372,19 +2375,19 @@
 		/* pinctrl-names = "fpc1020_reset_reset",
 			"fpc1020_reset_active",
 			"fpc1020_irq_active",
-            "fpc1020_ldo_2v8_en";
+			"fpc1020_ldo_2v8_en";
 		pinctrl-0 = <&fp_reset_low>;
 		pinctrl-1 = <&fp_reset_high>;
 		pinctrl-2 = <&fp_irq_active>;
 		pinctrl-3 = <&fp_ldo_2v8_en>; */
 	};
-    ant_check {
+
+	ant_check {
 		compatible = "ant_check";
 		pinctrl-names = "ant_check_irq_state";
 		pinctrl-0 = <&ant_check_irq_state>;
 		ant_check,irq_gpio = <&tlmm 9 0>;
 	};
-
 };
 
 #include "pm8953-rpm-regulator.dtsi"

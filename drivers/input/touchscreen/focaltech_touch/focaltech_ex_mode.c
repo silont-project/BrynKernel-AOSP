@@ -3,7 +3,7 @@
  * FocalTech ftxxxx TouchScreen driver.
  *
  * Copyright (c) 2012-2018, Focaltech Ltd. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -57,8 +57,8 @@ struct fts_mode_flag g_fts_mode_flag;
 /*****************************************************************************
 * 5.Global variable or extern global variabls/functions
 *****************************************************************************/
-int fts_enter_glove_mode(struct i2c_client *client, int mode);
-int fts_enter_cover_mode(struct i2c_client *client, int mode);
+int fts_enter_glove_mode(struct i2c_client *client, int mode );
+int fts_enter_cover_mode(struct i2c_client *client, int mode );
 int fts_enter_charger_mode(struct i2c_client *client, int mode );
 
 /*****************************************************************************

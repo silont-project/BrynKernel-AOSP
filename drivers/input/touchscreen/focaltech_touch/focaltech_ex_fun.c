@@ -3,7 +3,7 @@
  * FocalTech TouchScreen driver.
  *
  * Copyright (c) 2012-2018, Focaltech Ltd. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -145,7 +145,7 @@ static ssize_t fts_debug_write(struct file *filp, const char __user *buff, size_
 		break;
 
 	case PROC_HW_RESET:
-		snprintf(tmp, sizeof(tmp), "%s", writebuf + 1);
+		snprintf(tmp, PAGE_SIZE, "%s", writebuf + 1);
 		tmp[buflen - 1] = '\0';
 		if (strncmp(tmp, "focal_driver", 12) == 0) {
 			FTS_INFO("APK execute HW Reset");
@@ -258,7 +258,7 @@ static const struct file_operations fts_proc_fops = {
 * Return: data len
 ***********************************************************************/
 static int fts_debug_write(struct file *filp,
-					       const char __user *buff, unsigned long len, void *data)
+						   const char __user *buff, unsigned long len, void *data)
 {
 	int ret = 0;
 	u8 writebuf[PROC_WRITE_BUF_SIZE] = { 0 };
@@ -355,7 +355,7 @@ static int fts_debug_write(struct file *filp,
 * Return: read char number
 ***********************************************************************/
 static int fts_debug_read( char *page, char **start,
-					       off_t off, int count, int *eof, void *data )
+						   off_t off, int count, int *eof, void *data )
 {
 	int ret = 0;
 	u8 buf[PROC_READ_BUF_SIZE] = { 0 };
@@ -586,7 +586,7 @@ static ssize_t fts_tprwreg_show(struct device *dev, struct device_attribute *att
 			} else {
 				if (rw_op.opbuf) {
 					for (i = 0; i < rw_op.len; i++) {
-					    count += snprintf(buf + count, PAGE_SIZE, "%02X ", rw_op.opbuf[i]);
+						count += snprintf(buf + count, PAGE_SIZE, "%02X ", rw_op.opbuf[i]);
 					}
 					count += snprintf(buf + count, PAGE_SIZE, "\n");
 				}
@@ -819,7 +819,7 @@ static ssize_t fts_fwupgradebin_store(struct device *dev, struct device_attribut
 		return -EINVAL;
 	}
 	memset(fwname, 0, sizeof(fwname));
-	snprintf(fwname, sizeof(fwname), "%s", buf);
+	snprintf(fwname, PAGE_SIZE, "%s", buf);
 	fwname[count - 1] = '\0';
 
 	FTS_INFO("upgrade with bin file through sysfs node");
@@ -862,7 +862,7 @@ static ssize_t fts_fwforceupg_store(struct device *dev, struct device_attribute 
 		return -EINVAL;
 	}
 	memset(fwname, 0, sizeof(fwname));
-	snprintf(fwname, sizeof(fwname), "%s", buf);
+	snprintf(fwname, PAGE_SIZE, "%s", buf);
 	fwname[count - 1] = '\0';
 
 	FTS_INFO("force upgrade through sysfs node");

@@ -49,7 +49,7 @@
 
 #define PACK_SIZE                    256
 
-
+// hardware register define
 #define _bRW_MISCTL__SRAM_BANK       0x4048
 #define _bRW_MISCTL__MEM_CD_EN       0x4049
 #define _bRW_MISCTL__CACHE_EN        0x404B
@@ -64,35 +64,35 @@
 
 /*
  1.  firmware structure
-    header: 128b
+	header: 128b
 
-    offset           size          content
-    0                 4              firmware length
-    4                 2              checksum
-    6                 6              target MASK name
-    12               3              target MASK version
-    15               6              TP subsystem PID
-    21               3              TP subsystem version
-    24               1              subsystem count
-    25               1              chip type                             0x91: GT1X,   0x92: GT2X
-    26               6              reserved
-    32               8              subsystem info[0]
-    32               8              subsystem info[1]
-    .....
-    120             8              subsystem info[11]
+	offset           size          content
+	0                 4              firmware length
+	4                 2              checksum
+	6                 6              target MASK name
+	12               3              target MASK version
+	15               6              TP subsystem PID
+	21               3              TP subsystem version
+	24               1              subsystem count
+	25               1              chip type                             0x91: GT1X,   0x92: GT2X
+	26               6              reserved
+	32               8              subsystem info[0]
+	32               8              subsystem info[1]
+	.....
+	120             8              subsystem info[11]
 
-    body: followed header
+	body: followed header
 
-    128             N0              subsystem[0]
-    128+N0       N1              subsystem[1]
-    ....
+	128             N0              subsystem[0]
+	128+N0       N1              subsystem[1]
+	....
 
  2. subsystem info structure
-    offset           size          content
-    0                 1              subsystem type
-    1                 2              subsystem length
-    3                 2              stored address in flash           addr = value * 256
-    5                 3              reserved
+	offset           size          content
+	0                 1              subsystem type
+	1                 2              subsystem length
+	3                 2              stored address in flash           addr = value * 256
+	5                 3              reserved
 
 */
 
@@ -152,10 +152,10 @@ int gt1x_update_prepare(char *filename);
 int gt1x_check_firmware(void);
 u8 *gt1x_get_fw_data(u32 offset, int length);
 int gt1x_update_judge(void);
-int gt1x_run_ss51_isp(u8 *ss51_isp, int length);
+int gt1x_run_ss51_isp(u8 * ss51_isp, int length);
 int gt1x_burn_subsystem(struct fw_subsystem_info *subsystem);
-u16 gt1x_calc_checksum(u8 *fw, u32 length);
-int gt1x_recall_check(u8 *chk_src, u16 start_rd_addr, u16 chk_length);
+u16 gt1x_calc_checksum(u8 * fw, u32 length);
+int gt1x_recall_check(u8 * chk_src, u16 start_rd_addr, u16 chk_length);
 void gt1x_update_cleanup(void);
 int gt1x_check_subsystem_in_flash(struct fw_subsystem_info *subsystem);
 int gt1x_read_flash(u32 addr, int length);
@@ -165,7 +165,7 @@ void dump_to_file(u16 addr, int length, char *filepath);
 int gt1x_update_firmware(void *filename);
 int gt1x_auto_update_proc(void *data);
 
-
+//#ifndef CONFIG_GTP_HEADER_FW_UPDATE
 #if !defined(GTP_REQUEST_FW_UPDATE) && !defined(GTP_HEADER_FW_UPDATE)
 static int gt1x_search_update_files(void);
 #endif
@@ -194,7 +194,7 @@ s32 gt1x_check_fs_mounted(char *path_name)
 	}
 
 	if (path.mnt->mnt_sb == root_path.mnt->mnt_sb) {
-
+		// not mounted
 		err = ERROR_PATH;
 	} else {
 		err = 0;
@@ -206,7 +206,7 @@ check_fs_fail:
 	return err;
 }
 
-int gt1x_i2c_write_with_readback(u16 addr, u8 *buffer, int length)
+int gt1x_i2c_write_with_readback(u16 addr, u8 * buffer, int length)
 {
 	u8 buf[100];
 	int ret = gt1x_i2c_write(addr, buffer, length);
@@ -225,7 +225,7 @@ int gt1x_i2c_write_with_readback(u16 addr, u8 *buffer, int length)
 
 #define getU32(a) ((u32)getUint((u8 *)(a), 4))
 #define getU16(a) ((u16)getUint((u8 *)(a), 2))
-u32 getUint(u8 *buffer, int len)
+u32 getUint(u8 * buffer, int len)
 {
 	u32 num = 0;
 	int i;
@@ -238,10 +238,10 @@ u32 getUint(u8 *buffer, int len)
 
 int gt1x_auto_update_proc(void *data)
 {
-    char tp_version[50] = {0};
-    u8 Config_Version = 0;
-    u32 version_info;
-	mutex_lock(&edge_inhibition_mutex);
+	char tp_version[50] = {0};
+	u8 Config_Version = 0;
+	u32 version_info;
+	mutex_lock(&edge_inhibition_mutex);//lihongshuai@20181206
 #ifdef GTP_HEADER_FW_UPDATE
 	GTP_INFO("Start auto update thread...");
 	gt1x_update_firmware(NULL);
@@ -272,45 +272,45 @@ int gt1x_auto_update_proc(void *data)
 		}
 
 		if (gt1x_parse_config(filename, config) > 0) {
-            ret = gt1x_i2c_write(GTP_REG_CONFIG_DATA, config, GTP_CONFIG_ORG_LENGTH);
+			ret = gt1x_i2c_write(GTP_REG_CONFIG_DATA, config, GTP_CONFIG_ORG_LENGTH);
 			if (ret < 0) {
 				GTP_ERROR("Update config failed!");
-                return 0;
+				return 0;
 			}
 
-            /* extends config */
+			/* extends config */
 		    if (config[0x805A - GTP_REG_CONFIG_DATA] & 0x40) {
-                ret = gt1x_i2c_write(GTP_REG_EXT_CONFIG,
-                    &config[GTP_CONFIG_ORG_LENGTH], GTP_CONFIG_EXT_LENGTH);
+				ret = gt1x_i2c_write(GTP_REG_EXT_CONFIG,
+					&config[GTP_CONFIG_ORG_LENGTH], GTP_CONFIG_EXT_LENGTH);
 
-                if (ret < 0) {
-                    GTP_ERROR("Update ext config failed!");
-                    return 0;
-                }
-            }
+				if (ret < 0) {
+					GTP_ERROR("Update ext config failed!");
+					return 0;
+				}
+			}
 
-            GTP_INFO("Update config successfully!");
+			GTP_INFO("Update config successfully!");
 		}
 	}
 
 #endif
-    if (gt1x_i2c_read(GTP_REG_CONFIG_DATA, &Config_Version, 1) < 0)
-    {
-        GTP_ERROR("Read config version failed.");
-    }
-	mutex_unlock(&edge_inhibition_mutex);
-    version_info = gt1x_version.patch_id;
-    memset(tp_version, 0, sizeof(tp_version));
-    sprintf(tp_version, "[FW]0x%06X,[IC]GT1151Q,Config_Version:%d",version_info,Config_Version);
-    update_tp_fm_info(tp_version);
+	if (gt1x_i2c_read(GTP_REG_CONFIG_DATA, &Config_Version, 1) < 0)
+	{
+		GTP_ERROR("Read config version failed.");
+	}
+	mutex_unlock(&edge_inhibition_mutex);//lihongshuai@20181206
+	version_info = gt1x_version.patch_id;
+	memset(tp_version, 0, sizeof(tp_version));
+	sprintf(tp_version, "[FW]0x%06X,[IC]GT1151Q,Config_Version:%d",version_info,Config_Version);
+	update_tp_fm_info(tp_version);
 
 	return 0;
 }
-
+//#ifndef CONFIG_GTP_HEADER_FW_UPDATE
 #if !defined(GTP_REQUEST_FW_UPDATE) && !defined(GTP_HEADER_FW_UPDATE)
 static int gt1x_search_update_files(void)
 {
-	int retry = 20 * 2;
+	int retry = 20 * 2;	//wait 10s(max) if fs is not ready
 	struct file *pfile = NULL;
 	mm_segment_t old_fs;
 	int found = 0;
@@ -322,12 +322,12 @@ static int gt1x_search_update_files(void)
 	while (retry-- > 0) {
 		msleep(500);
 
-
+		// check if rootfs is ready
 		if (gt1x_check_fs_mounted("/data")) {
 			GTP_DEBUG("filesystem is not ready");
 			continue;
 		}
-
+		// search firmware
 		pfile = filp_open(UPDATE_FILE_PATH_1, O_RDONLY, 0);
 		if (IS_ERR(pfile)) {
 			pfile = filp_open(UPDATE_FILE_PATH_2, O_RDONLY, 0);
@@ -341,7 +341,7 @@ static int gt1x_search_update_files(void)
 		if (!IS_ERR(pfile)) {
 			filp_close(pfile, NULL);
 		}
-
+		// search config file
 		pfile = filp_open(CONFIG_FILE_PATH_1, O_RDONLY, 0);
 		if (IS_ERR(pfile)) {
 			pfile = filp_open(CONFIG_FILE_PATH_2, O_RDONLY, 0);
@@ -369,12 +369,12 @@ static int gt1x_search_update_files(void)
 
 void gt1x_enter_update_mode(void)
 {
-    GTP_DEBUG("Enter FW update mode.");
+	GTP_DEBUG("Enter FW update mode.");
 #if GTP_ESD_PROTECT
 	gt1x_esd_switch(SWITCH_OFF);
 #endif
 #if GTP_CHARGER_SWITCH
-    gt1x_charger_switch(SWITCH_OFF);
+	gt1x_charger_switch(SWITCH_OFF);
 #endif
 	gt1x_irq_disable();
 }
@@ -402,40 +402,40 @@ int gt1x_update_firmware(void *filename)
 
 	ret = gt1x_check_firmware();
 	if (ret) {
-        update_info.status = UPDATE_STATUS_ABORT;
+		update_info.status = UPDATE_STATUS_ABORT;
 		goto gt1x_update_exit;
 	}
 #if GTP_FW_UPDATE_VERIFY
-    update_info.max_progress =
-        6 + update_info.firmware->subsystem_count;
+	update_info.max_progress =
+		6 + update_info.firmware->subsystem_count;
 #else
-    update_info.max_progress =
-        3 + update_info.firmware->subsystem_count;
+	update_info.max_progress =
+		3 + update_info.firmware->subsystem_count;
 #endif
-	update_info.progress++;
+	update_info.progress++; // 1
 
 	ret = gt1x_update_judge();
 	if (ret) {
-        update_info.status = UPDATE_STATUS_ABORT;
+		update_info.status = UPDATE_STATUS_ABORT;
 		goto gt1x_update_exit;
 	}
-	update_info.progress++;
+	update_info.progress++; // 2
 
 	p = gt1x_get_fw_data(update_info.firmware->subsystem[0].offset, update_info.firmware->subsystem[0].length);
 	if (p == NULL) {
 		GTP_ERROR("get isp fail");
 		ret = ERROR_FW;
-        update_info.status = UPDATE_STATUS_ABORT;
+		update_info.status = UPDATE_STATUS_ABORT;
 		goto gt1x_update_exit;
 	}
-	update_info.progress++;
+	update_info.progress++; // 3
 
 	ret = gt1x_run_ss51_isp(p, update_info.firmware->subsystem[0].length);
 	if (ret) {
 		GTP_ERROR("run isp fail");
 		goto gt1x_update_exit;
 	}
-	update_info.progress++;
+	update_info.progress++; // 4
 	msleep(800);
 
 	for (i = 1; i < update_info.firmware->subsystem_count; i++) {
@@ -448,7 +448,7 @@ int gt1x_update_firmware(void *filename)
 			GTP_ERROR("burn subsystem fail!");
 			goto gt1x_update_exit;
 		}
-        update_info.progress++;
+		update_info.progress++;
 	}
 
 #if GTP_FW_UPDATE_VERIFY
@@ -477,11 +477,11 @@ int gt1x_update_firmware(void *filename)
 
 		ret = gt1x_check_subsystem_in_flash(&(update_info.firmware->subsystem[i]));
 		if (ret) {
-            gt1x_error_erase();
+			gt1x_error_erase();
 			break;
 		}
 	}
-    update_info.progress++;
+	update_info.progress++;
 #endif
 
 gt1x_update_exit:
@@ -489,20 +489,20 @@ gt1x_update_exit:
 	gt1x_leave_update_mode();
 	gt1x_read_version(&gt1x_version);
 	if (ret) {
-        update_info.progress = 2 * update_info.max_progress;
+		update_info.progress = 2 * update_info.max_progress;
 		GTP_ERROR("Update firmware failed!");
-        return ret;
+		return ret;
 	} else if (gt1x_init_failed) {
 		gt1x_read_version(&gt1x_version);
 		gt1x_init_panel();
-    #if GTP_CHARGER_SWITCH
-        gt1x_parse_chr_cfg(gt1x_version.sensor_id);
-    #endif
-    #if GTP_SMART_COVER
-        gt1x_parse_sc_cfg(gt1x_version.sensor_id);
-    #endif
+	#if GTP_CHARGER_SWITCH
+		gt1x_parse_chr_cfg(gt1x_version.sensor_id);
+	#endif
+	#if GTP_SMART_COVER
+		gt1x_parse_sc_cfg(gt1x_version.sensor_id);
+	#endif
 	}
-    GTP_INFO("Update firmware succeefully!");
+	GTP_INFO("Update firmware succeefully!");
 	return ret;
 }
 
@@ -510,7 +510,7 @@ int gt1x_update_prepare(char *filename)
 {
 	int ret = 0;
 	int retry = 5;
-	char filepath[128];
+	char filepath[128]; // add tom
 
 
 	if (filename == NULL) {
@@ -527,7 +527,7 @@ int gt1x_update_prepare(char *filename)
 			GTP_ERROR("Request firmware failed - %s (%d)\n", GT1X_FW_NAME, ret);
 			return ERROR_FW;
 		}
-
+		//GTP_INFO("Firmware size: %d", update_info.fw->size);
 
 		update_info.update_type = UPDATE_TYPE_REQUEST;
 		update_info.fw_data = (u8*)update_info.fw->data;
@@ -547,7 +547,7 @@ int gt1x_update_prepare(char *filename)
 
 		update_info.old_fs = get_fs();
 		set_fs(KERNEL_DS);
-
+		//update_info.fw_name = filename;
 		update_info.fw_name = filepath;
 		update_info.update_type = UPDATE_TYPE_FILE;
 		update_info.fw_file = filp_open(update_info.fw_name, O_RDONLY, 0);
@@ -646,7 +646,7 @@ int gt1x_check_firmware(void)
 	int i;
 	int offset;
 
-
+	// compare file length with the length field in the firmware header
 	if (update_info.fw_length < FW_HEAD_SIZE) {
 		GTP_ERROR("Bad firmware!(file length: %d)", update_info.fw_length);
 		return ERROR_CHECK;
@@ -660,7 +660,7 @@ int gt1x_check_firmware(void)
 		GTP_ERROR("Bad firmware!(file length: %d, header define: %d)", update_info.fw_length, getU32(p));
 		return ERROR_CHECK;
 	}
-
+	// check firmware's checksum
 	checksum_in_header = getU16(&p[4]);
 	checksum = 0;
 	for (i = 6; i < update_info.fw_length; i++) {
@@ -675,7 +675,7 @@ int gt1x_check_firmware(void)
 		GTP_ERROR("Bad firmware!(checksum: 0x%04X, header define: 0x%04X)", checksum, checksum_in_header);
 		return ERROR_CHECK;
 	}
-
+	// parse firmware
 	p = gt1x_get_fw_data(0, FW_HEAD_SIZE);
 	if (p == NULL) {
 		return ERROR_FW;
@@ -694,7 +694,7 @@ int gt1x_check_firmware(void)
 		offset += firmware->subsystem[i].length;
 	}
 
-
+	// print update information
 	GTP_INFO("Update type: %s", update_info.update_type == UPDATE_TYPE_HEADER ? "Header" : "File");
 	GTP_INFO("Firmware length: %d", update_info.fw_length);
 	GTP_INFO("Firmware product: GT%s", update_info.firmware->pid);
@@ -756,28 +756,28 @@ int gt1x_update_judge(void)
 		if (ret < 0) {	/* read reg failed */
 			goto _reset;
 		} else if (ret > 0) {
-            continue;
-        }
+			continue;
+		}
 
-        ret = gt1x_i2c_read_dbl_check(GTP_REG_FW_CHK_SUBSYS, &reg_val[1], 1);
-        if (ret < 0) {
-            goto _reset;
-        } else if (ret > 0) {
-            continue;
-        }
+		ret = gt1x_i2c_read_dbl_check(GTP_REG_FW_CHK_SUBSYS, &reg_val[1], 1);
+		if (ret < 0) {
+			goto _reset;
+		} else if (ret > 0) {
+			continue;
+		}
 
-        break;
+		break;
 _reset:
-        gt1x_reset_guitar();
+		gt1x_reset_guitar();
 	}while (--retry);
 
-    if (!retry) {
-        GTP_INFO("Update abort because of i2c error.");
-        return ERROR_CHECK;
-    }
+	if (!retry) {
+		GTP_INFO("Update abort because of i2c error.");
+		return ERROR_CHECK;
+	}
 	if (reg_val[0] != 0xBE || reg_val[1] == 0xAA) {
 		GTP_INFO("Check fw status reg not pass,reg[0x814E]=0x%2X,reg[0x5095]=0x%2X!",
-            reg_val[0], reg_val[1]);
+			reg_val[0], reg_val[1]);
 		return 0;
 	}
 
@@ -800,10 +800,10 @@ _reset:
 		return 0;
 	}
 #if GTP_DEBUG_ON
-    if (update_info.force_update) {
-        GTP_DEBUG("Debug mode, force update fw.");
-        return 0;
-    }
+	if (update_info.force_update) {
+		GTP_DEBUG("Debug mode, force update fw.");
+		return 0;
+	}
 #endif
 	if ((fw_ver_info.patch_id & 0xFFFF) != (ver_info.patch_id & 0xFFFF)) {
 		GTP_INFO("The version of the fw is different form the IC's!");
@@ -825,14 +825,14 @@ int __gt1x_hold_ss51_dsp_20(void)
 
 	while (retry++ < 30) {
 
-
+		// Hold ss51 & dsp
 		buf[0] = 0x0C;
 		ret = gt1x_i2c_write(_rRW_MISCTL__SWRST_B0_, buf, 1);
 		if (ret) {
 			GTP_ERROR("Hold ss51 & dsp I2C error,retry:%d", retry);
 			continue;
 		}
-
+		// Confirm hold
 		buf[0] = 0x00;
 		ret = gt1x_i2c_read(_rRW_MISCTL__SWRST_B0_, buf, 1);
 		if (ret) {
@@ -862,49 +862,49 @@ int gt1x_hold_ss51_dsp(void)
 	int ret = ERROR, retry = 5;
 	u8 buffer[2];
 
-    do {
-        gt1x_select_addr();
+	do {
+		gt1x_select_addr();
 	 usleep_range(20000, 20010);
-        ret =  gt1x_i2c_read(0x4220, buffer, 1);
-    } while (retry-- && ret < 0);
+		ret =  gt1x_i2c_read(0x4220, buffer, 1);
+	} while (retry-- && ret < 0);
 
-    if (ret < 0)
-        return ERROR;
+	if (ret < 0)
+		return ERROR;
 
-
+	//hold ss51_dsp
 	ret = __gt1x_hold_ss51_dsp_20();
 	if (ret) {
 		return ret;
 	}
-
+	// enable dsp & mcu power
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__DSP_MCU_PWR_, buffer, 1);
 	if (ret) {
 		GTP_ERROR("enabel dsp & mcu power fail!");
 		return ret;
 	}
-
+	// disable watchdog
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__TMR0_EN, buffer, 1);
 	if (ret) {
 		GTP_ERROR("disable wdt fail!");
 		return ret;
 	}
-
+	// clear cache
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__CACHE_EN, buffer, 1);
 	if (ret) {
 		GTP_ERROR("clear cache fail!");
 		return ret;
 	}
-
+	// soft reset
 	buffer[0] = 0x01;
 	ret = gt1x_i2c_write(_bWO_MISCTL__CPU_SWRST_PULSE, buffer, 1);
 	if (ret) {
 		GTP_ERROR("software reset fail!");
 		return ret;
 	}
-
+	// set scramble
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_rRW_MISCTL__BOOT_OPT_B0_, buffer, 1);
 	if (ret) {
@@ -915,7 +915,7 @@ int gt1x_hold_ss51_dsp(void)
 	return 0;
 }
 
-int gt1x_run_ss51_isp(u8 *ss51_isp, int length)
+int gt1x_run_ss51_isp(u8 * ss51_isp, int length)
 {
 	int ret;
 	u8 buffer[10];
@@ -924,14 +924,14 @@ int gt1x_run_ss51_isp(u8 *ss51_isp, int length)
 	if (ret) {
 		return ret;
 	}
-
+	// select bank4
 	buffer[0] = 0x04;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__SRAM_BANK, buffer, 1);
 	if (ret) {
 		GTP_ERROR("select bank4 fail.");
 		return ret;
 	}
-
+	// enable patch area access
 	buffer[0] = 0x01;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__PATCH_AREA_EN_, buffer, 1);
 	if (ret) {
@@ -940,13 +940,13 @@ int gt1x_run_ss51_isp(u8 *ss51_isp, int length)
 	}
 
 	GTP_INFO("ss51_isp length: %d, checksum: 0x%04X", length, gt1x_calc_checksum(ss51_isp, length));
-
+	// load ss51 isp
 	ret = gt1x_i2c_write(0xC000, ss51_isp, length);
 	if (ret) {
 		GTP_ERROR("load ss51 isp fail!");
 		return ret;
 	}
-
+	// recall compare
 	ret = gt1x_recall_check(ss51_isp, 0xC000, length);
 	if (ret) {
 		GTP_ERROR("recall check ss51 isp fail!");
@@ -956,21 +956,21 @@ int gt1x_run_ss51_isp(u8 *ss51_isp, int length)
 	memset(buffer, 0xAA, 10);
 	ret = gt1x_i2c_write_with_readback(0x8140, buffer, 10);
 
-
+	// disable patch area access
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__PATCH_AREA_EN_, buffer, 1);
 	if (ret) {
 		GTP_ERROR("disable patch area access fail!");
 		return ret;
 	}
-
+	// set 0x8006
 	memset(buffer, 0x55, 8);
 	ret = gt1x_i2c_write_with_readback(0x8006, buffer, 8);
 	if (ret) {
 		GTP_ERROR("set 0x8006[0~7] 0x55 fail!");
 		return ret;
 	}
-
+	// release ss51
 	buffer[0] = 0x08;
 	ret = gt1x_i2c_write_with_readback(_rRW_MISCTL__SWRST_B0_, buffer, 1);
 	if (ret) {
@@ -979,7 +979,7 @@ int gt1x_run_ss51_isp(u8 *ss51_isp, int length)
 	}
 
 	msleep(100);
-
+	// check run state
 	ret = gt1x_i2c_read(0x8006, buffer, 2);
 	if (ret) {
 		GTP_ERROR("read 0x8006 fail!");
@@ -993,7 +993,7 @@ int gt1x_run_ss51_isp(u8 *ss51_isp, int length)
 	return 0;
 }
 
-u16 gt1x_calc_checksum(u8 *fw, u32 length)
+u16 gt1x_calc_checksum(u8 * fw, u32 length)
 {
 	u32 i = 0;
 	u32 checksum = 0;
@@ -1005,7 +1005,7 @@ u16 gt1x_calc_checksum(u8 *fw, u32 length)
 	return (checksum & 0xFFFF);
 }
 
-int gt1x_recall_check(u8 *chk_src, u16 start_addr, u16 chk_length)
+int gt1x_recall_check(u8 * chk_src, u16 start_addr, u16 chk_length)
 {
 	u8 rd_buf[PACK_SIZE];
 	s32 ret = 0;
@@ -1116,23 +1116,23 @@ int gt1x_burn_subsystem(struct fw_subsystem_info *subsystem)
 		}
 		burn_state = ERROR;
 		wait_time = 200;
-        msleep(5);
-        
-		while (wait_time-- > 0) {
-        	u8 confirm = 0x55;
+		msleep(5);
 
-        	ret = gt1x_i2c_read(0x8022, buffer, 1);
-            if (ret < 0) {
-                continue;
-            }
-        	msleep(5);
-        	ret = gt1x_i2c_read(0x8022, &confirm, 1);
-            if (ret < 0) {
-                continue;
-            }
-        	if (buffer[0] != confirm) {
-        		continue;
-        	}
+		while (wait_time-- > 0) {
+			u8 confirm = 0x55;
+
+			ret = gt1x_i2c_read(0x8022, buffer, 1);
+			if (ret < 0) {
+				continue;
+			}
+			msleep(5);
+			ret = gt1x_i2c_read(0x8022, &confirm, 1);
+			if (ret < 0) {
+				continue;
+			}
+			if (buffer[0] != confirm) {
+				continue;
+			}
 
 			if (buffer[0] == 0xAA) {
 				GTP_DEBUG("burning.....");
@@ -1232,7 +1232,7 @@ int gt1x_read_flash(u32 addr, int length)
 	buffer[1] = 0xAA;
 	ret |= gt1x_i2c_write(0x8020, buffer, 2);
 	if (ret) {
-		GTP_ERROR("Error occured.");
+		GTP_ERROR("Error occured.");	//comment
 		return ret;
 	}
 
@@ -1271,10 +1271,10 @@ int gt1x_error_erase(void)
 
 	GTP_INFO("Erase flash area of ss51.");
 
-    gt1x_reset_guitar();
+	gt1x_reset_guitar();
 
-    fw = gt1x_get_fw_data(update_info.firmware->subsystem[0].offset,
-        update_info.firmware->subsystem[0].length);
+	fw = gt1x_get_fw_data(update_info.firmware->subsystem[0].offset,
+		update_info.firmware->subsystem[0].length);
 	if (fw == NULL) {
 		GTP_ERROR("get isp fail");
 		return ERROR_FW;
@@ -1285,15 +1285,15 @@ int gt1x_error_erase(void)
 		return ERROR_PATH;
 	}
 
-    fw = kmalloc(1024 * 4, GFP_KERNEL);
-    if (!fw) {
-        GTP_ERROR("error when alloc mem.");
-        return ERROR_MEM;
-    }
+	fw = kmalloc(1024 * 4, GFP_KERNEL);
+	if (!fw) {
+		GTP_ERROR("error when alloc mem.");
+		return ERROR_MEM;
+	}
 
-    memset(fw, 0xFF, 1024 * 4);
-    erase_addr = 0x00;
-    block_len = 1024 * 4;
+	memset(fw, 0xFF, 1024 * 4);
+	erase_addr = 0x00;
+	block_len = 1024 * 4;
 
 	while (retry-- > 0) {
 
@@ -1376,7 +1376,7 @@ int gt1x_error_erase(void)
 		}
 	}
 
-    kfree(fw);
+	kfree(fw);
 	if (burn_state == 0) {
 		return 0;
 	} else {
@@ -1387,17 +1387,17 @@ int gt1x_error_erase(void)
 void gt1x_leave_update_mode(void)
 {
 	GTP_DEBUG("Leave FW update mode.");
-    if (update_info.status != UPDATE_STATUS_ABORT)
-    	gt1x_reset_guitar();
+	if (update_info.status != UPDATE_STATUS_ABORT)
+		gt1x_reset_guitar();
 
 #if GTP_CHARGER_SWITCH
-    gt1x_charger_switch(SWITCH_ON);
+	gt1x_charger_switch(SWITCH_ON);
 #endif
 #if GTP_ESD_PROTECT
 	gt1x_esd_switch(SWITCH_ON);
 #endif
 
-    update_info.status = UPDATE_STATUS_IDLE;
+	update_info.status = UPDATE_STATUS_IDLE;
 	gt1x_irq_enable();
 }
 
@@ -1435,40 +1435,40 @@ int gt1x_hold_ss51_dsp_no_reset(void)
 	int ret = ERROR;
 	u8 buffer[2];
 
-
+	//hold ss51_dsp
 	ret = __gt1x_hold_ss51_dsp_20();
 	if (ret) {
 		return ret;
 	}
-
+	// enable dsp & mcu power
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__DSP_MCU_PWR_, buffer, 1);
 	if (ret) {
 		GTP_ERROR("enabel dsp & mcu power fail!");
 		return ret;
 	}
-
+	// disable watchdog
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__TMR0_EN, buffer, 1);
 	if (ret) {
 		GTP_ERROR("disable wdt fail!");
 		return ret;
 	}
-
+	// clear cache
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__CACHE_EN, buffer, 1);
 	if (ret) {
 		GTP_ERROR("clear cache fail!");
 		return ret;
 	}
-
+	// soft reset
 	buffer[0] = 0x01;
 	ret = gt1x_i2c_write(_bWO_MISCTL__CPU_SWRST_PULSE, buffer, 1);
 	if (ret) {
 		GTP_ERROR("software reset fail!");
 		return ret;
 	}
-
+	// set scramble
 	buffer[0] = 0x00;
 	ret = gt1x_i2c_write_with_readback(_rRW_MISCTL__BOOT_OPT_B0_, buffer, 1);
 	if (ret) {
@@ -1481,7 +1481,7 @@ int gt1x_hold_ss51_dsp_no_reset(void)
 
 #define GT1X_LOAD_PACKET_SIZE (1024 * 2)
 
-int gt1x_load_patch(u8 *patch, u32 patch_size, int offset, int bank_size)
+int gt1x_load_patch(u8 * patch, u32 patch_size, int offset, int bank_size)
 {
 	s32 loaded_length = 0;
 	s32 len = 0;
@@ -1492,7 +1492,7 @@ int gt1x_load_patch(u8 *patch, u32 patch_size, int offset, int bank_size)
 	GTP_INFO("Load patch code(size: %d, checksum: 0x%04X, position: 0x%04X, bank-size: %d", patch_size, gt1x_calc_checksum(patch, patch_size), 0xC000 + offset, bank_size);
 	while (loaded_length != patch_size) {
 		if (loaded_length == 0 || (loaded_length + offset) % bank_size == 0) {
-
+			// select bank
 			bank = 0x04 + (loaded_length + offset) / bank_size;
 			ret = gt1x_i2c_write(_bRW_MISCTL__SRAM_BANK, &bank, 1);
 			if (ret) {
@@ -1500,7 +1500,7 @@ int gt1x_load_patch(u8 *patch, u32 patch_size, int offset, int bank_size)
 				return ret;
 			}
 			GTP_INFO("Select bank%d success.", bank);
-
+			// enable patch area access
 			tmp = 0x01;
 			ret = gt1x_i2c_write_with_readback(_bRW_MISCTL__PATCH_AREA_EN_ + bank - 4, &tmp, 1);
 			if (ret) {

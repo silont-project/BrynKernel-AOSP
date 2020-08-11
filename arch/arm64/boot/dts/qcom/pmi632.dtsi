@@ -1,5 +1,5 @@
-/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -320,14 +320,14 @@
 			qcom,hvdcp-disable;
 			qcom,micro-usb;
 			qcom,sw-jeita-enable = <1>;
-			qcom,fcc-max-ua = <3000000>;
+			qcom,fcc-max-ua = <2000000>;
 			qcom,usb-icl-ua = <3000000>;
 			qcom,fv-max-uv =  <4400000>;
 			qcom,chg-term-src = <1>;
 			qcom,chg-term-current-ma = <(-200)>;
 
 			qcom,thermal-mitigation
-				= <3000000 2500000 2000000 1500000 1000000 800000
+				= <2000000 1500000 1000000 800000
 					500000 200000>;
 
 			qcom,chgr@1000 {
@@ -496,7 +496,7 @@
 			qcom,qg-vadc = <&pmi632_vadc>;
 			qcom,pmic-revid = <&pmi632_revid>;
 			qcom,ignore-shutdown-soc-secs = <1800>;
-			qcom,shutdown-soc-threshold = <20>;
+			qcom,shutdown-soc-threshold = <40>;
 
 			qcom,qgauge@4800 {
 				status = "okay";

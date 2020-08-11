@@ -1,26 +1,26 @@
 /* drivers/input/touchscreen/test_function.c
- *
-
+ * 
+ 
  * 2010 - 2014 Shenzhen Huiding Technology Co.,Ltd.
- *
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be a reference
- * to you, when you are integrating the GOODiX's CTP IC into your system,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This program is distributed in the hope that it will be a reference 
+ * to you, when you are integrating the GOODiX's CTP IC into your system, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
  * General Public License for more details.
- *
+ * 
  * Version: 1.0
  * Release Date: 2014/11/14
  *
  */
 
 #ifdef __cplusplus
-
+//extern "C" {
 #endif
 
 #include <linux/string.h>
@@ -60,10 +60,10 @@ long offset_limit = 150;
 /* uniformity = minimum / maximum */
 long uniformity_limit = 0;
 
-/* further judgement for not meet the entire screen offset limit of the channel,
+/* further judgement for not meet the entire screen offset limit of the channel, 
    when the following conditions are satisfied that the legitimate:
    1 beyond the entire screen offset limit but not beyond the limits ,
-   2 to meet the condition of 1 point number no more than
+   2 to meet the condition of 1 point number no more than 
    3 3 of these two non adjacent */
 long special_limit = 250;
 
@@ -118,7 +118,7 @@ unsigned char *need_check;
 unsigned char *channel_key_need_check;
 
 /* max sample data number */
-
+//int samping_num = 64;
 int samping_num = 16;
 
 u8 *global_large_buf;
@@ -164,12 +164,12 @@ char save_data_path[250];
 u8 *original_cfg;
 u8 *module_cfg;
 
-s32 _node_in_key_chn(u16 node, u8 *config, u16 keyoffest)
+s32 _node_in_key_chn(u16 node, u8 * config, u16 keyoffest)
 {
 	int ret = -1;
 	u8 i, tmp, chn;
 	if (node < sys.sc_sensor_num * sys.sc_driver_num) {
-		return -EPERM;
+		return -1;
 	}
 
 	chn = node - sys.sc_sensor_num * sys.sc_driver_num;
@@ -442,7 +442,7 @@ static unsigned char _check_area_accord(void)
 				test_error_code |= _BEYOND_ACCORD_LIMIT;
 				test_result = 0;
 				beyond_accord_limit_num[index]++;
-
+	
 			GTP_ERROR("current[%d]%ld,accord_limit[%d]%ld",index,accord_temp,index,accord_limit[index]);
 			}
 		}
@@ -462,20 +462,20 @@ static unsigned char _check_area_accord_1143(void)
 			index = i + j * sys.sc_sensor_num;
 
 			accord_temp = 0;
-
+//                      GTP_ERROR("need_check[%d]%d.",index,need_check[index]);
 			if (need_check[index] == _NEED_NOT_CHECK) {
 				continue;
 			}
 
 			if (current_data_temp[index] == 0) {
-
+//                              current_data_temp[index] = 1;
 				continue;
 			}
 
 			if (j % 2 == 0) {
-				sign = 1;
+				sign = 1;	//right
 			} else {
-				sign = -1;
+				sign = -1;	//left
 			}
 
 			if (i == 0) {
@@ -487,8 +487,8 @@ static unsigned char _check_area_accord_1143(void)
 					     abs((s16) (current_data_temp[i + 1 + (j + sign) * sys.sc_sensor_num] - current_data_temp[i + (j + sign) * sys.sc_sensor_num]))) /
 					    current_data_temp[index];
 
-
-
+//                                      GTP_ERROR("buf[%d]=%d,buf[%d]=%d,buf[%d]=%d,buf[%d]=%d",i + 1 + j * sys.sc_sensor_num,current_data_temp[i + 1 + j * sys.sc_sensor_num],index,current_data_temp[index],
+//                                                      i + 1 + (j + sign) * sys.sc_sensor_num,current_data_temp[i + 1 + (j + sign) * sys.sc_sensor_num],i + (j + sign) * sys.sc_sensor_num,current_data_temp[i + (j + sign) * sys.sc_sensor_num]);
 				}
 			} else if (i == sys.sc_sensor_num - 1) {
 				if ((need_check[i - 1 + j * sys.sc_sensor_num] != _NEED_NOT_CHECK) && (need_check[i + (j + sign) * sys.sc_sensor_num] != _NEED_NOT_CHECK)
@@ -537,10 +537,10 @@ static unsigned char _check_full_screen_offest(unsigned char special_check)
 		/* get the max ratio of the total screen,(current_chn_value - screen_average_value)/screen_average_value */
 		offset_temp = abs((current_data_temp[i] - average_temp) * FLOAT_AMPLIFIER) / average_temp;
 
-
-
-
-
+//              /* if area accord test is pass,and then do not do the screen accord test */
+//              if ((channel_status[i] & _BEYOND_ACCORD_LIMIT) != _BEYOND_ACCORD_LIMIT) {
+//                      continue;
+//              }
 		/* current channel accord validity detection */
 		if (offset_temp > offset_limit) {
 			if ((special_check == _SPECIAL_CHECK) && (special_num < _SPECIAL_LIMIT_CHANNEL_NUM) && (offset_temp <= special_limit)) {
@@ -650,7 +650,7 @@ static unsigned char _check_uniformity(void)
 	GTP_ERROR("min_val: %d, max_val: %d, tp uniformity(x1000): %lx", min_val, max_val, uniformity);
 	if (uniformity < uniformity_limit) {
 		beyond_uniformity_limit_num++;
-
+		//channel_status[i] |= _BEYOND_UNIFORMITY_LIMIT;
 		test_error_code |= _BEYOND_UNIFORMITY_LIMIT;
 		test_result = 0;
 	}
@@ -664,7 +664,7 @@ static s32 _check_modele_type(int type)
 		ic_id = read_sensorid();
 		if (ic_id != read_sensorid()) {
 			WARNING("Read many ID inconsistent");
-			return -EPERM;
+			return -1;
 		}
 	}
 
@@ -718,18 +718,18 @@ static unsigned char _rawdata_test_result_analysis(int check_types)
 	int error_code_temp = test_error_code;
 	int err = 0;
 	int test_end = 0;
-
+	// screen max value check
 	GTP_ERROR("[%s] enter,,check_types=[0x%x]\n",__func__,check_types);
 	error_code_temp &= ~_BEYOND_MAX_LIMIT;
 	if (((check_types & _MAX_CHECK) != 0) && ((test_error_code & _BEYOND_MAX_LIMIT) != 0)) {
 		for (i = 0; i < sys.sc_sensor_num * sys.sc_driver_num; i++) {
 			if ((channel_status[i] & _BEYOND_MAX_LIMIT) == _BEYOND_MAX_LIMIT) {
 				if (beyond_max_limit_num[i] >= (samping_set_number * 9 / 10)) {
-
+					//GTP_ERROR("beyond max limit.9/10...[%d]",i);
 					error_code_temp |= _BEYOND_MAX_LIMIT;
 					test_end |= _BEYOND_MAX_LIMIT;
 				} else if (beyond_max_limit_num[i] > samping_set_number / 10) {
-
+					//GTP_ERROR("beyond max limit.1/10...[%d]",i);
 					error_code_temp |= _BEYOND_MAX_LIMIT;
 					err |= _BEYOND_MAX_LIMIT;
 				} else {
@@ -744,11 +744,11 @@ static unsigned char _rawdata_test_result_analysis(int check_types)
 		for (i = sys.sc_sensor_num * sys.sc_driver_num; i < sys.sc_sensor_num * sys.sc_driver_num + sys.key_number; i++) {
 			if ((channel_status[i] & _KEY_BEYOND_MAX_LIMIT) == _KEY_BEYOND_MAX_LIMIT) {
 				if (beyond_max_limit_num[i] >= (samping_set_number * 9 / 10)) {
-
+					//GTP_ERROR("key beyond max limit.9/10...[%d]",i);
 					error_code_temp |= _KEY_BEYOND_MAX_LIMIT;
 					test_end |= _KEY_BEYOND_MAX_LIMIT;
 				} else if (beyond_max_limit_num[i] > samping_set_number / 10) {
-
+					//GTP_ERROR("key beyond max limit.1/10...[%d]",i);
 					err |= _KEY_BEYOND_MAX_LIMIT;
 				} else {
 					channel_status[i] &= ~_KEY_BEYOND_MAX_LIMIT;
@@ -762,11 +762,11 @@ static unsigned char _rawdata_test_result_analysis(int check_types)
 		for (i = 0; i < sys.sc_sensor_num * sys.sc_driver_num; i++) {
 			if ((channel_status[i] & _BEYOND_MIN_LIMIT) == _BEYOND_MIN_LIMIT) {
 				if (beyond_min_limit_num[i] >= (samping_set_number * 9 / 10)) {
-
+					//GTP_ERROR("beyond min limit.9/10...[%d]",i);
 					error_code_temp |= _BEYOND_MIN_LIMIT;
 					test_end |= _BEYOND_MIN_LIMIT;
 				} else if (beyond_min_limit_num[i] > samping_set_number / 10) {
-
+					//GTP_ERROR("beyond min limit.1/10...[%d]",i);
 					error_code_temp |= _BEYOND_MIN_LIMIT;
 					err |= _BEYOND_MIN_LIMIT;
 				} else {
@@ -808,16 +808,16 @@ static unsigned char _rawdata_test_result_analysis(int check_types)
 	/* adjacent data accord check */
 	error_code_temp &= ~_BEYOND_ACCORD_LIMIT;
 	if (((check_types & _ACCORD_CHECK) != 0) && ((test_error_code & _BEYOND_ACCORD_LIMIT) != 0)) {
-
+		//GTP_ERROR("analysis accord ");
 		for (i = 0; i < sys.sc_sensor_num * sys.sc_driver_num; i++) {
 			if ((channel_status[i] & _BEYOND_ACCORD_LIMIT) == _BEYOND_ACCORD_LIMIT) {
 				if (beyond_accord_limit_num[i] >= (samping_set_number * 9 / 10)) {
-
+					//GTP_ERROR("beyond accord limit.9/10...[%d]",i);
 					error_code_temp |= _BEYOND_ACCORD_LIMIT;
 					test_end |= _BEYOND_ACCORD_LIMIT;
 					accord_temp++;
 				} else if (beyond_accord_limit_num[i] > samping_set_number / 10) {
-
+					//GTP_ERROR("beyond accord limit.1/10...[%d]",i);
 					error_code_temp |= _BEYOND_ACCORD_LIMIT;
 					err |= _BEYOND_ACCORD_LIMIT;
 					accord_temp++;
@@ -894,17 +894,17 @@ static unsigned char _accord_test_result_analysis(int check_types)
 	if (sys.chip_type != _GT1143) {
 		return 1;
 	}
-
+	//1143
 	test_error_code &= ~_BEYOND_ACCORD_LIMIT;
 	error = error_tmp = _CHANNEL_PASS;
 	if ((check_types & _ACCORD_CHECK) != 0) {
 		for (i = 0; i < sys.sc_sensor_num * sys.sc_driver_num; i++) {
 			accord_tmp = channel_max_line_accord[i] / current_data_index;
-
-			if (accord_tmp > accord_line_limit[i])
+//                      GTP_ERROR("accord_line_limit[%d]=%ld",i,accord_line_limit[i]);
+			if (accord_tmp > accord_line_limit[i])	//NG
 			{
 				error |= _BEYOND_ACCORD_LIMIT;
-			} else if (accord_tmp > accord_limit[i] && accord_tmp <= accord_line_limit[i])
+			} else if (accord_tmp > accord_limit[i] && accord_tmp <= accord_line_limit[i])	//
 			{
 				error_tmp |= _BETWEEN_ACCORD_AND_LINE;
 			}
@@ -933,7 +933,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 	int average;
 	GTP_ERROR("[%s] enter.\n",__func__);
 	data = (u8 *) malloc(MAX_BUFFER_SIZE);
-
+	
 	if (NULL == data) {
 		WARNING("memory error!");
 		return MEMORY_ERR;
@@ -952,6 +952,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 			bytes += (s32) sprintf((char *)&data[bytes], "0x%02X,", module_cfg[i]);
 		}
 		bytes += (s32) sprintf((char *)&data[bytes], "\n\n");
+		ret = fwrite(data, bytes, 1, fp);
 		bytes = 0;
 		if (ret < 0) {
 			WARNING("write to file fail.");
@@ -965,6 +966,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 					bytes += (s32) sprintf((char *)&data[bytes], "%d,", max_limit_value[i + j * sys.sc_sensor_num]);
 				}
 				bytes += (s32) sprintf((char *)&data[bytes], "\n");
+				ret = fwrite(data, bytes, 1, fp);
 				bytes = 0;
 				if (ret < 0) {
 					WARNING("write to file fail.");
@@ -982,6 +984,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 				/* GTP_ERROR("max[%d]%d",i,max_key_limit_value[i]); */
 			}
 			bytes += (s32) sprintf((char *)&data[bytes], "\n");
+			ret = fwrite(data, bytes, 1, fp);
 			bytes = 0;
 			if (ret < 0) {
 				WARNING("write to file fail.");
@@ -996,6 +999,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 					bytes += (s32) sprintf((char *)&data[bytes], "%d,", min_limit_value[i + j * sys.sc_sensor_num]);
 				}
 				bytes += (s32) sprintf((char *)&data[bytes], "\n");
+				ret = fwrite(data, bytes, 1, fp);
 				bytes = 0;
 				if (ret < 0) {
 					WARNING("write to file fail.");
@@ -1012,6 +1016,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 				bytes += (s32) sprintf((char *)&data[bytes], "%d,", min_key_limit_value[j++]);
 			}
 			bytes += (s32) sprintf((char *)&data[bytes], "\n");
+			ret = fwrite(data, bytes, 1, fp);
 			if (ret < 0) {
 				WARNING("write to file fail.");
 				goto exit_save_testing_data;
@@ -1025,6 +1030,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 					bytes += (s32) sprintf((char *)&data[bytes], "%ld,", accord_limit[i + j * sys.sc_sensor_num]);
 				}
 				bytes += (s32) sprintf((char *)&data[bytes], "\n");
+				ret = fwrite(data, bytes, 1, fp);
 				bytes = 0;
 				if (ret < 0) {
 					WARNING("write to file fail.");
@@ -1033,6 +1039,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 			}
 
 			bytes = (s32) sprintf((char *)data, "\n");
+			ret = fwrite(data, bytes, 1, fp);
 			if (ret < 0) {
 				WARNING("write to file fail.");
 				goto exit_save_testing_data;
@@ -1045,6 +1052,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 						bytes += (s32) sprintf((char *)&data[bytes], "%ld,", accord_line_limit[i + j * sys.sc_sensor_num]);
 					}
 					bytes += (s32) sprintf((char *)&data[bytes], "\n");
+					ret = fwrite(data, bytes, 1, fp);
 					bytes = 0;
 					if (ret < 0) {
 						WARNING("write to file fail.");
@@ -1053,6 +1061,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 				}
 
 				bytes = (s32) sprintf((char *)data, "\n");
+				ret = fwrite(data, bytes, 1, fp);
 				if (ret < 0) {
 					WARNING("write to file fail.");
 					goto exit_save_testing_data;
@@ -1061,6 +1070,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 		}
 
 		bytes = (s32) sprintf((char *)data, " Rawdata\n");
+		ret = fwrite(data, bytes, 1, fp);
 		if (ret < 0) {
 			WARNING("write to file fail.");
 			goto exit_save_testing_data;
@@ -1068,6 +1078,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 	}
 
 	bytes = (s32) sprintf((char *)data, "No.%d\n", current_data_index);
+	ret = fwrite(data, bytes, 1, fp);
 	if (ret < 0) {
 		WARNING("write to file fail.");
 		goto exit_save_testing_data;
@@ -1089,6 +1100,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 			average += tmp;
 		}
 		bytes += (s32) sprintf((char *)&data[bytes], "\n");
+		ret = fwrite(data, bytes, 1, fp);
 		if (ret < 0) {
 			WARNING("write to file fail.");
 			goto exit_save_testing_data;
@@ -1105,6 +1117,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 			bytes += (s32) sprintf((char *)&data[bytes], "%d,", current_data_temp[i + sys.sc_sensor_num * sys.sc_driver_num]);
 		}
 		bytes += (s32) sprintf((char *)&data[bytes], "\n");
+		ret = fwrite(data, bytes, 1, fp);
 		if (ret < 0) {
 			WARNING("write to file fail.");
 			goto exit_save_testing_data;
@@ -1112,6 +1125,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 	}
 
 	bytes = (s32) sprintf((char *)data, "  Maximum:%d  Minimum:%d  Average:%d\n\n", max, min, average);
+	ret = fwrite(data, bytes, 1, fp);
 	if (ret < 0) {
 		WARNING("write to file fail.");
 		goto exit_save_testing_data;
@@ -1119,6 +1133,7 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 
 	if ((test_types & _ACCORD_CHECK) != 0) {
 		bytes = (s32) sprintf((char *)data, "Channel_Accord :(%d)\n", FLOAT_AMPLIFIER);
+		ret = fwrite(data, bytes, 1, fp);
 		if (ret < 0) {
 			WARNING("write to file fail.");
 			goto exit_save_testing_data;
@@ -1126,36 +1141,38 @@ static s32 _save_testing_data(char *save_test_data_dir, int test_types)
 		for (i = 0; i < sys.sc_sensor_num; i++) {
 			bytes = 0;
 			for (j = 0; j < sys.sc_driver_num; j++) {
-
-
-				if ((channel_max_accord[i + j * sys.sc_sensor_num]/1000 > 0)
+				//bytes += (s32) sprintf((char *)&data[bytes], "%ld,", channel_max_accord[i + j * sys.sc_sensor_num]);
+				//for save float accord
+				if((channel_max_accord[i + j * sys.sc_sensor_num]/1000 > 0)
 					&& (channel_max_accord[i + j * sys.sc_sensor_num]/10000 == 0)){
 					bytes += (s32) sprintf((char *)&data[bytes], "%ld,",
 								channel_max_accord[i + j * sys.sc_sensor_num]);
-				}else if ((channel_max_accord[i + j * sys.sc_sensor_num]/100 > 0)
+				}else if((channel_max_accord[i + j * sys.sc_sensor_num]/100 > 0)
 					&& (channel_max_accord[i + j * sys.sc_sensor_num]/1000 == 0)){
 					bytes += (s32) sprintf((char *)&data[bytes], "0.%ld,",
 								channel_max_accord[i + j * sys.sc_sensor_num]);
 				}
-				else if ((channel_max_accord[i + j * sys.sc_sensor_num]/10 > 0)
+				else if((channel_max_accord[i + j * sys.sc_sensor_num]/10 > 0)
 					&& (channel_max_accord[i + j * sys.sc_sensor_num]/100 == 0)){
 					bytes += (s32) sprintf((char *)&data[bytes], "0.0%ld,",
 								channel_max_accord[i + j * sys.sc_sensor_num]);
 				}
-				else if ((channel_max_accord[i + j * sys.sc_sensor_num] > 0)
+				else if((channel_max_accord[i + j * sys.sc_sensor_num] > 0)
 					&& (channel_max_accord[i + j * sys.sc_sensor_num] < 10)){
 					bytes += (s32) sprintf((char *)&data[bytes], "0.00%ld,",
 								channel_max_accord[i + j * sys.sc_sensor_num]);
 				}
-
+				//end for save float accord
 			}
 			bytes += (s32) sprintf((char *)&data[bytes], "\n");
+			ret = fwrite(data, bytes, 1, fp);
 			if (ret < 0) {
 				WARNING("write to file fail.");
 				goto exit_save_testing_data;
 			}
 		}
 		bytes = (s32) sprintf((char *)data, "\n");
+		ret = fwrite(data, bytes, 1, fp);
 		if (ret < 0) {
 			WARNING("write to file fail.");
 			goto exit_save_testing_data;
@@ -1170,7 +1187,7 @@ exit_save_testing_data:
 	return ret;
 }
 
-static s32 _save_test_result_data(char *save_test_data_dir, int test_types, u8 *shortresult)
+static s32 _save_test_result_data(char *save_test_data_dir, int test_types, u8 * shortresult)
 {
 	FILE *fp = NULL;
 	s32 ret, index;
@@ -1351,6 +1368,7 @@ static s32 _save_test_result_data(char *save_test_data_dir, int test_types, u8 *
 		}
 	}
 
+	ret = fwrite(data, bytes, 1, fp);
 
 	if (ret < 0) {
 
@@ -1437,6 +1455,7 @@ static s32 _save_test_result_data(char *save_test_data_dir, int test_types, u8 *
 			bytes += (s32) sprintf((char *)&data[bytes], "pass\n");
 
 		}
+		ret = fwrite(data, bytes, 1, fp);
 
 		if (ret < 0) {
 
@@ -1472,7 +1491,7 @@ static void _unzip_nc(unsigned char *s_buf, unsigned char *key_nc_buf, unsigned 
 	int b_size = sys.max_driver_num * sys.max_sensor_num;
 
 	u8 *tmp;
-
+	
 	tmp = (u8 *) (&global_large_buf[s_length + key_length]);
 
 	memset(need_check, 0, b_size);
@@ -1518,7 +1537,7 @@ KEY_NC_UNZIP:
 		for (m = 0; m < sys.sc_sensor_num; m++) {
 
 			need_check[point++] = tmp[i + m * sys.sc_driver_num];
-
+//                      GTP_ERROR("need_check[%d]%d",point-1,need_check[point-1]);
 		}
 
 	}
@@ -1637,7 +1656,7 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 		} while (buf[i] != '\r' && buf[i++] != '\n');
 
 		buf[i] = '\0';
-
+		//GTP_ERROR("special node [%s].\n",buf);
 		getrid_space(buf, i);
 
 		strtok((char *)buf, "=");
@@ -1646,7 +1665,7 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 
 			i = 0;
 
-
+			//GTP_ERROR("Begin get node data.");
 
 			do {
 
@@ -1660,7 +1679,7 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 
 				tmpNode = atoi((char const *)tmp);
 
-
+				 //GTP_ERROR("tmpNode:%d", tmpNode); 
 				tmp = (char *)strtok((char *)NULL, ",");
 
 				if (tmp == NULL) {
@@ -1675,7 +1694,7 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 
 				max = atoi((char const *)tmp);
 
-
+				//GTP_ERROR("max:%d", max);
 
 				tmp = (char *)strtok((char *)NULL, ",");
 
@@ -1691,7 +1710,7 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 
 				min = atoi((char const *)tmp);
 
-
+				//GTP_ERROR("min:%d", min);
 
 				tmp = (char *)strtok((char *)NULL, ",");
 
@@ -1705,9 +1724,9 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 
 				}
 
-				accord = atof((char const *)tmp);
+				accord = atof((char const *)tmp);// * FLOAT_AMPLIFIER;
 
-
+				//GTP_ERROR("accord:%ld", accord);
 
 				if (tmpNode < sys.sc_driver_num * sys.sc_sensor_num) {
 
@@ -1724,11 +1743,11 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 					if (accord_limit != NULL) {
 						accord_limit[tmpNode] = accord;
 					}
-
-
-
-
-
+//                                      max_limit_value[tmpNode] = max;
+//
+//                                      min_limit_value[tmpNode] = min;
+//
+//                                      accord_limit[tmpNode] = accord;
 
 				}
 
@@ -1743,7 +1762,7 @@ static s32 _init_special_node(char *inipath, const char *key, int *max_limit, in
 
 			} while (++i < b_size);
 
-
+			//GTP_ERROR("get node data end.");
 			fclose(fp);
 
 			free(buf);
@@ -1802,7 +1821,7 @@ static s32 _init_special_node_array(void)
 	return i / 4;
 }
 #endif
-static s32 _check_rawdata_proc(int check_types, u16 *data, int len, char *save_path)
+static s32 _check_rawdata_proc(int check_types, u16 * data, int len, char *save_path)
 {
 	GTP_ERROR("[%s] enter.\n",__func__);
 	if (data == NULL || len < sys.driver_num * sys.sensor_num) {
@@ -1885,12 +1904,12 @@ static s32 _check_rawdata_proc(int check_types, u16 *data, int len, char *save_p
 
 	}
 #if GTP_SAVE_TEST_DATA
-
+//  if ((check_types & _TEST_RESULT_SAVE) != 0)
 	{
 		_save_testing_data(save_path, check_types);
 	}
 
-#endif /*
+#endif /* 
         */
 
 	GTP_ERROR("The %d group rawdata test end!\n", current_data_index);
@@ -2020,7 +2039,7 @@ static int _hold_ss51_dsp(void)
 
 		WARNING("Enter update Hold ss51 failed.");
 
-		return -EPERM;
+		return -1;
 
 	}
 
@@ -2031,7 +2050,7 @@ static int _hold_ss51_dsp(void)
 /**
  * fun: take several tests of average value
  */
-static int _ave_resist_analysis(u8 *s, u8 *d)
+static int _ave_resist_analysis(u8 * s, u8 * d)
 {
 	u32 g_size, offest, ave;
 	u8 i, j, k, cnt, s_chn1, s_chn2, upload_cnt, index;
@@ -2045,7 +2064,7 @@ static int _ave_resist_analysis(u8 *s, u8 *d)
 	if (tmp == NULL) {
 		return MEMORY_ERR;
 	}
-
+//      GTP_ERROR("%s",__func__);
 	DEBUG_ARRAY(s, gt900_short_test_times * g_size);
 	cnt = s[0];
 	for (i = 0; i < gt900_short_test_times; i++) {
@@ -2065,7 +2084,7 @@ static int _ave_resist_analysis(u8 *s, u8 *d)
 				if ((s_chn1 == s[offest + k * 4 + 1] && s_chn2 == s[offest + k * 4 + 2]) || (s_chn2 == s[offest + k * 4 + 1] && s_chn1 == s[offest + k * 4 + 2])) {
 					tmp[0]++;
 					tmp[index++] = (s[offest + k * 4 + 3] << 8) + s[offest + k * 4 + 4];
-
+//                                      GTP_ERROR("tmp[%d]%d,offest %d",index -1,tmp[index -1],offest);
 					break;
 				}
 			}
@@ -2076,11 +2095,11 @@ static int _ave_resist_analysis(u8 *s, u8 *d)
 		if (tmp[0] * FLOAT_AMPLIFIER >= gt900_short_test_times * FLOAT_AMPLIFIER * 8 / 10) {
 			for (k = 0, ave = 0; k < tmp[0]; k++) {
 				ave += tmp[k + 1];
-
+//                              GTP_ERROR("tmp[%d]%d",k+1,tmp[k+1]);
 			}
 
 			ave = ave / tmp[0];
-
+//                      GTP_ERROR("ave%d,cnt%d",ave,tmp[0]);
 			d[upload_cnt * 4 + 1] = s[i * 4 + 1];
 			d[upload_cnt * 4 + 2] = s[i * 4 + 2];
 			d[upload_cnt * 4 + 3] = (u8) (ave >> 8);
@@ -2096,7 +2115,7 @@ static int _ave_resist_analysis(u8 *s, u8 *d)
 	return upload_cnt;
 }
 
-static s32 _check_short_circuit(int test_types, u8 *short_result)
+static s32 _check_short_circuit(int test_types, u8 * short_result)
 {
 
 	u8 *data, *upload_data_ave, *tmp, short_test_cnt = 0;
@@ -2267,7 +2286,7 @@ static s32 _alloc_test_memory(int b_size)
 {
 
 	int offest = 0;
-	if (global_large_buf != NULL)
+	if(global_large_buf != NULL)
 	{
 		return 1;
 	}
@@ -2404,7 +2423,7 @@ static void _exit_test(void)
 
 	}
 	ret = gt1x_send_cfg(gt1x_config, gt1x_cfg_length);
-	if (ret == 0){
+	if(ret == 0){
 		GTP_INFO("%s:send cfg success",__func__);
 	}else{
 		GTP_ERROR("%s:send cfg fail",__func__);
@@ -2426,10 +2445,10 @@ static s32 _get_test_parameters(char *inipath)
 	}
 
 
-
+	
 	test_types = ini_read_hex(inipath, (const char *)"test_types");
-
-
+	
+	//return 0;
 	if (test_types < 0) {
 
 		WARNING("get the test types 0x%x is error.", test_types);
@@ -2438,13 +2457,13 @@ static s32 _get_test_parameters(char *inipath)
 
 	}
 
-
+	//GTP_ERROR("test type:%x\n", test_types);
 
 	if (test_types & _MAX_CHECK) {
 
 		max_limit_value_tmp = ini_read_int(inipath, (const char *)"max_limit_value");
 
-
+		//GTP_ERROR("max_limit_value:%d\n", max_limit_value_tmp);
 
 	}
 
@@ -2452,7 +2471,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		min_limit_value_tmp = ini_read_int(inipath, (const char *)"min_limit_value");
 
-
+		//GTP_ERROR("min_limit_value:%d\n", min_limit_value_tmp);
 
 	}
 
@@ -2460,7 +2479,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		accord_limit_tmp = ini_read_float(inipath, (const char *)"accord_limit");
 
-
+		//GTP_ERROR("accord_limit:%ld", accord_limit_tmp);
 
 	}
 
@@ -2468,7 +2487,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		offset_limit = ini_read_float(inipath, (const char *)"offset_limit");
 
-
+		//GTP_ERROR("offset_limit:%ld", offset_limit);
 
 	}
 
@@ -2476,7 +2495,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		permit_jitter_limit = ini_read_int(inipath, (const char *)"permit_jitter_limit");
 
-
+		//GTP_ERROR("permit_jitter_limit:%d\n", permit_jitter_limit);
 
 	}
 
@@ -2484,7 +2503,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		special_limit = ini_read_float(inipath, (const char *)"special_limit");
 
-
+		//GTP_ERROR("special_limit:%ld", special_limit);
 
 	}
 
@@ -2492,7 +2511,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		max_key_limit_value_tmp = ini_read_int(inipath, (const char *)"max_key_limit_value");
 
-
+		//GTP_ERROR("max_key_limit_value:%d\n", max_key_limit_value_tmp);
 
 	}
 
@@ -2500,7 +2519,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		min_key_limit_value_tmp = ini_read_int(inipath, (const char *)"min_key_limit_value");
 
-
+		//GTP_ERROR("min_key_limit_value:%d\n", min_key_limit_value_tmp);
 
 	}
 
@@ -2508,7 +2527,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		ini_module_type = ini_read_int(inipath, (const char *)"module_type");
 
-
+		//GTP_ERROR("Sensor ID:%d\n", ini_module_type);
 
 	}
 
@@ -2516,7 +2535,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		ini_read(inipath, (const char *)"version_equ", (char *)ini_version1);
 
-
+		//GTP_ERROR("version_equ:%s", ini_version1);
 
 	}
 
@@ -2524,7 +2543,7 @@ static s32 _get_test_parameters(char *inipath)
 
 		ini_read(inipath, (const char *)"version_greater", (char *)ini_version1);
 
-
+		//GTP_ERROR("version_greater:%s", ini_version1);
 
 	}
 
@@ -2532,11 +2551,11 @@ static s32 _get_test_parameters(char *inipath)
 
 		ini_read(inipath, (const char *)"version_between1", (char *)ini_version1);
 
-
+		//GTP_ERROR("version_between1:%s", ini_version1);
 
 		ini_read(inipath, (const char *)"version_between2", (char *)ini_version2);
 
-
+		//GTP_ERROR("version_between2:%s", ini_version2);
 
 	}
 
@@ -2622,9 +2641,9 @@ static s32 _get_test_parameters(char *inipath)
 
 		}
 
-
-		lret = 0x02;
-
+		//lret = ini_read_float(inipath, (const char *)"tri_pattern_r_ratio");
+		lret = 0x02;//modify by tom
+		
 		if (ret > 0) {
 
 			tri_pattern_r_ratio = lret;
@@ -2645,8 +2664,8 @@ static s32 _get_test_parameters(char *inipath)
 
 	}
 
-
-	uniformity_limit = 0x03;
+	//uniformity_limit = ini_read_float(inipath, (const char *)"rawdata_uniformity");
+	uniformity_limit = 0x03; //modify by tom
 
 	if (uniformity_limit > 0) {
 
@@ -2676,7 +2695,7 @@ static s32 _get_test_parameters_array(void)
 
 	}
 
-
+	//GTP_ERROR("test type:%x\n", test_types);
 
 	if (test_types & _MAX_CHECK) {
 
@@ -2851,8 +2870,8 @@ static s32 _init_test_paramters(char *inipath)
 	const u8 nc_tmp[] = NC;
 	const u8 key_nc_tmp[] = KEY_NC;
 	const u8 module_cfg_tmp[] = MODULE_CFG;
-#endif
-
+#endif	
+//	const u8 module_cfg_tmp[] = MODULE_CFG;
 
 
 	GTP_ERROR("%s", __func__);
@@ -2949,17 +2968,17 @@ static s32 _init_test_paramters(char *inipath)
 	ret = sizeof(module_cfg_tmp);
 	memcpy(module_cfg, module_cfg_tmp, ret);
 #endif
-
+	
 	GTP_ERROR("module_cfg len %d ,config len %d", ret, sys.config_length);
 
-
+	//if (ret < 0 || ret != sys.config_length) { //modify by tom
 	if (ret < 0 || ret == 239) {
 
 		GTP_ERROR("switch the original cfg.");
 
+		//memcpy(module_cfg, original_cfg, sys.config_length); //modify by tom
 
-
-		disable_hopping(module_cfg, 239, 1);
+		disable_hopping(module_cfg, 239, 1); //modify by tom
 
 	} else {
 
@@ -2987,7 +3006,7 @@ static s32 _init_test_paramters(char *inipath)
 	ret = sizeof(key_nc_tmp);
 #endif
 
-
+	//GTP_ERROR("WITH KEY?:0x%x\n", ret);
 
 	if (ret <= 0) {
 		_unzip_nc(s_nc_buf, key_nc_buf, b_size / 8 + 8, 0);
@@ -2995,15 +3014,15 @@ static s32 _init_test_paramters(char *inipath)
 		_unzip_nc(s_nc_buf, key_nc_buf, b_size / 8 + 8, sys.max_sensor_num);
 	}
 
+	//GTP_ERROR("need check array:\n");
 
+	//DEBUG_ARRAY(need_check, sys.sc_driver_num * sys.sc_sensor_num);
 
-
-
-
+	//GTP_ERROR("key need check array:\n");
 
 	/* DEBUG_ARRAY(channel_key_need_check, b_size); */
 
-
+	//GTP_ERROR("key_nc_buf:\n");
 
 	/* DEBUG_ARRAY(key_nc_buf, strlen((const char*)key_nc_buf)); */
 #endif
@@ -3038,13 +3057,13 @@ static int _check_config(void)
 {
 	u8 *config;
 	int ret = -1,i;
-	if (module_cfg == NULL)
+	if(module_cfg == NULL)
 	{
-		return -EPERM;
+		return -1;
 	}
 
 	config = (u8*)malloc(sys.config_length);
-	if (config == NULL)
+	if(config == NULL)
 	{
 		return MEMORY_ERR;
 	}
@@ -3052,12 +3071,12 @@ static int _check_config(void)
 	memset(config,0,sys.config_length);
 
 	read_config(config, sys.config_length);
-	if (memcmp(&module_cfg[1], &config[1], sys.config_length - 2) == 0)
+	if(memcmp(&module_cfg[1], &config[1], sys.config_length - 2) == 0)
 	{
 		ret = 1;
 	}else
 	{
-		for (i = 0; i < sys.config_length; i++)
+		for(i = 0; i < sys.config_length; i++)
 		{
 			GTP_ERROR("module[%d]0x%02X, config[%d]0x%02X",i,module_cfg[i],i,config[i]);
 		}
@@ -3100,7 +3119,7 @@ TEST_START:
 	memset(largebuf, 0, 600 + sys.sensor_num * sys.driver_num * 2);
 
 	ini_path = (char *)(&largebuf[0]);
-
+	//ini_path = "/vendor/etc/test_sensor_0.ini";
 	short_result = (u8 *) (&largebuf[250]);
 
 	save_path = (char *)(&largebuf[350]);
@@ -3108,7 +3127,7 @@ TEST_START:
 	rawdata = (u16 *) (&largebuf[600]);
 
 	GTP_ERROR("sen*drv:%d*%d", sys.sensor_num, sys.driver_num);
-
+	
 #if GTP_TEST_PARAMS_FROM_INI
 
 	if (auto_find_ini(ini_find_dir1, ini_format, ini_path) < 0) {
@@ -3126,13 +3145,13 @@ TEST_START:
 
 	GTP_ERROR("find ini path:%s", ini_path);
 	GTP_ERROR("This params is short_result_data = %s\n", short_result_data);
-
+	
 #endif
-
+	//ini_path = "/data/test_sensor_F.ini";
 	test_types = _init_test_paramters(ini_path);
 	test_types = 0x650007;
 
-
+	//GTP_ERROR("test type=0x%x\n",test_types);
 	if (test_types < 0) {
 
 		WARNING("get test params failed.");
@@ -3143,7 +3162,7 @@ TEST_START:
 
 	}
 
-
+	//FORMAT_PATH(save_path, save_result_dir, "test_data");
 	sprintf(save_path, "%s%s.csv", save_result_dir, "test_data");
 	GTP_ERROR("save path is %s", save_path);
 
@@ -3190,7 +3209,7 @@ TEST_START:
 		}
 
 
-
+		
 		if (sys.chip_type == _GT1143 && test_error_code & _GT_SHORT) {
 			goto TEST_COMPLETE;
 		}
@@ -3208,11 +3227,11 @@ TEST_START:
 
 	times = 0;
 	timeouts = 0;
-
+	
 	if (test_types & (_MAX_CHECK | _MIN_CHECK | _ACCORD_CHECK | _OFFSET_CHECK | _JITTER_CHECK | _KEY_MAX_CHECK | _KEY_MIN_CHECK | _UNIFORMITY_CHECK)) {
 		while (times < 16) {
-
-
+		
+			//GTP_ERROR("read_rawdata:time[%d].\n",times);
 			ret = read_raw_data(rawdata, sys.sensor_num * sys.driver_num);
 
 			if (ret < 0) {
@@ -3261,10 +3280,10 @@ TEST_START:
 			goto TEST_END;
 
 		}
-		if (check_cfg == 1)
+		if(check_cfg == 1)
 		{
 			check_cfg++;
-			if (_check_config() < 0)
+			if(_check_config() < 0)
 			{
 				WARNING("The configuration is accidental changes.");
 				disable_hopping(original_cfg, sys.config_length, 0);
@@ -3278,7 +3297,7 @@ TEST_COMPLETE:
 	ret = test_error_code;
 
 #if GTP_SAVE_TEST_DATA
-
+//  if ((check_types & _TEST_RESULT_SAVE) != 0)
 	{
 
 		_save_test_result_data(save_path, test_types, short_result);
@@ -3308,5 +3327,5 @@ TEST_END:
 }
 
 #ifdef __cplusplus
-
+//}
 #endif

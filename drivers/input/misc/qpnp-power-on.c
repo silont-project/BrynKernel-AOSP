@@ -1,5 +1,5 @@
 /* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -32,10 +32,14 @@
 #include <linux/regulator/machine.h>
 #include <linux/regulator/of_regulator.h>
 #include <linux/input/qpnp-power-on.h>
-#include <asm/bootinfo.h>
 #include <linux/qpnp/qpnp-pbs.h>
 #include <linux/qpnp/qpnp-misc.h>
 #include <linux/power_supply.h>
+
+#ifdef CONFIG_BOOT_INFO
+#include <asm/bootinfo.h>
+#define QPNP_POFF_REASON2(pon)			((pon)->base + 0xD)
+#endif
 
 #define PMIC_VER_8941           0x01
 #define PMIC_VERSION_REG        0x0105
@@ -70,7 +74,6 @@
 	((pon)->base + PON_OFFSET((pon)->subtype, 0xA, 0xC2))
 #define QPNP_POFF_REASON1(pon) \
 	((pon)->base + PON_OFFSET((pon)->subtype, 0xC, 0xC5))
-#define QPNP_POFF_REASON2(pon)                  ((pon)->base + 0xD)
 #define QPNP_PON_WARM_RESET_REASON2(pon)	((pon)->base + 0xB)
 #define QPNP_PON_OFF_REASON(pon)		((pon)->base + 0xC7)
 #define QPNP_FAULT_REASON1(pon)			((pon)->base + 0xC8)
@@ -369,7 +372,6 @@ int qpnp_pon_set_restart_reason(enum pon_restart_reason reason)
 	else
 		rc = qpnp_pon_masked_write(pon, QPNP_PON_SOFT_RB_SPARE(pon),
 					   GENMASK(7, 2), (reason << 2));
-	pr_err("pon_restart_reason=0x%x\n",reason);
 
 	if (rc)
 		dev_err(&pon->pdev->dev,
@@ -826,6 +828,7 @@ int qpnp_pon_is_warm_reset(void)
 }
 EXPORT_SYMBOL(qpnp_pon_is_warm_reset);
 
+#ifdef CONFIG_BOOT_INFO
 int qpnp_pon_is_ps_hold_reset(void)
 {
 	struct qpnp_pon *pon = sys_reset_dev;
@@ -842,8 +845,7 @@ int qpnp_pon_is_ps_hold_reset(void)
 				QPNP_POFF_REASON1(pon), rc);
 		return 0;
 	}
-
-	/*The bit 1 is 1, means by PS_HOLD/MSM controlled shutdown */
+	/* The bit 1 is 1, means by PS_HOLD/MSM controlled shutdown */
 	if (reg & (1<<POFF_REASON_EVENT_PS_HOLD))
 		return 1;
 
@@ -893,6 +895,7 @@ int qpnp_pon_is_lpk(void)
 	return 0;
 }
 EXPORT_SYMBOL(qpnp_pon_is_lpk);
+#endif
 
 /**
  * qpnp_pon_wd_config - Disable the wd in a warm reset.
@@ -2449,7 +2452,9 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 				"PMIC@SID%d: Power-off reason: %s\n",
 				to_spmi_device(pon->pdev->dev.parent)->usid,
 				qpnp_poff_reason[index]);
+#ifdef CONFIG_BOOT_INFO
 		set_poweroff_reason(index);
+#endif
 	}
 
 	if (pon->pon_trigger_reason == PON_SMPL ||
@@ -2701,8 +2706,6 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "sys file creation failed rc: %d\n", rc);
 		goto err_out;
 	}
-
-	/*xiaomi add just for pm8998, usid is 0*/
 
 	rc = device_create_file(&pdev->dev, &dev_attr_kpdpwr_reset);
 	if (rc) {

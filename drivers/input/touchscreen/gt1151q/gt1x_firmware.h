@@ -4030,6 +4030,6 @@ unsigned char hotknot_transfer_fw[] = {
 };
 
 unsigned char hotknot_auth_fw[] = {};
-#endif
+#endif // GTP_HOTKNOT
 
-#endif
+#endif // _GT1X_FIRMWARE_H_
