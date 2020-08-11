@@ -50,7 +50,7 @@
 			"csr_gp_io_mux_quin_ctl";
 
 		qcom,msm-ext-pa = "primary";
-		qcom,msm-mclk-freq = <9600000>;
+		qcom,msm-mclk-freq = <11289600>;
 		qcom,msm-mbhc-hphl-swh = <1>;
 		qcom,msm-mbhc-gnd-swh = <1>;
 		qcom,msm-hs-micbias-type = "external";
