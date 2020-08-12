@@ -2,8 +2,8 @@
  * Goodix GT9xx touchscreen driver
  *
  * Copyright  (C)  2010 - 2016 Goodix. Ltd.
- * Copyright (C) 2019 XiaoMi, Inc.
- * 
+ * Copyright (C) 2020 XiaoMi, Inc.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -12,9 +12,9 @@
  * This program is distributed in the hope that it will be a reference
  * to you, when you are integrating the GOODiX's CTP IC into your system,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * Version: 2.4.0.1
  * Release Date: 2016/10/26
  */
@@ -52,15 +52,15 @@
 #define GTP_CONFIG_OF	      1
 
 //***************************PART1:ON/OFF define*******************************
-#define GTP_CUSTOM_CFG        0
-#define GTP_CHANGE_X2Y        0
+#define GTP_CUSTOM_CFG        0	
+#define GTP_CHANGE_X2Y        0	   //swap x y
 #define GTP_DRIVER_SEND_CFG   1	   //driver send config
 #define GTP_HAVE_TOUCH_KEY    0
-#define GTP_POWER_CTRL_SLEEP  0
-#define GTP_ICS_SLOT_REPORT   1    // slot protocol 
+#define GTP_POWER_CTRL_SLEEP  0    //power off when suspend
+#define GTP_ICS_SLOT_REPORT   1    // slot protocol
 
-#define GTP_AUTO_UPDATE       0
-#define GTP_HEADER_FW_UPDATE  0
+#define GTP_AUTO_UPDATE       0    // auto update fw by .bin file as default
+#define GTP_HEADER_FW_UPDATE  0    // auto update fw by gtp_default_FW in gt9xx_firmware.h, function together with GTP_AUTO_UPDATE
 #define GTP_AUTO_UPDATE_CFG   0    // auto update config by .cfg file, function together with GTP_AUTO_UPDATE
 
 #define GTP_COMPATIBLE_MODE   0    // compatible with GT9XXF
@@ -70,7 +70,7 @@
 
 #define GTP_WITH_HOVER        0    //pen surrport hover or not 1:enable 0 disable
 
-#define GTP_GESTURE_WAKEUP    1   // gesture wakeup 
+#define GTP_GESTURE_WAKEUP    1   // gesture wakeup
 
 #define GTP_DEBUG_ON          0
 #define GTP_DEBUG_ARRAY_ON    0
@@ -145,7 +145,7 @@ struct work_struct fb_notify_work;
  struct pinctrl_state *erst_as_default;
  struct pinctrl_state *erst_output_low;
  struct pinctrl_state *erst_output_high;
-    
+
 };
 
 extern u16 show_len;
@@ -157,8 +157,8 @@ extern char gt9xx_tp_lockdown_info[128];
 extern char fw_version[64];
 extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 
-
-
+//*************************** PART2:TODO define **********************************
+// STEP_1(REQUIRED): Define Configuration Information Group(s)
 // Sensor_ID Map:
 /* sensor_opt1 sensor_opt2 Sensor_ID
     GND         GND          0
@@ -168,7 +168,7 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
     VDDIO      NC/300K    4
     NC           NC/300K    5
 */
-
+// TODO: define your own default or for Sensor_ID == 0 config here.
 // The predefined one is just a sample config, which is not suitable for your tp in most cases.
 #define CTP_CFG_GROUP0 {\
 	0x42, 0xD0, 0x02, 0x00, 0x05, 0x05, 0x75, 0x01, 0x01, 0x0F, 0x24,\
@@ -188,7 +188,7 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 	0x18, 0x16, 0x14, 0x13, 0x12, 0x10, 0x0F, 0x0C, 0x0A, 0x08, 0x06,\
 	0x04, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x9C, 0x01\
-	}
+    }
 
 // TODO: define your config for Sensor_ID == 1 here, if needed
 #define CTP_CFG_GROUP1 {\
@@ -213,7 +213,7 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 	0x18, 0x16, 0x14, 0x13, 0x12, 0x10, 0x0F, 0x0C, 0x0A, 0x08, 0x06,\
 	0x04, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3C, 0x01\
-}
+    }
 
 // TODO: define your config for Sensor_ID == 3 here, if needed
 #define CTP_CFG_GROUP3 {\
@@ -226,8 +226,8 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 #define CTP_CFG_GROUP5 {\
     }
 
-
-#define GTP_RST_PORT    64
+// STEP_2(REQUIRED): Customize your I/O ports & I/O operations
+#define GTP_RST_PORT    64//S5PV210_GPJ3(6)
 #define GTP_INT_PORT    65//S5PV210_GPH1(3)
 
 #define GTP_GPIO_AS_INPUT(pin)          do{\
@@ -263,7 +263,7 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 #define GTP_DRIVER_VERSION          "V2.4.0.1<2016/10/26>"
 #define GTP_I2C_NAME                "Goodix-TS"
 #define GT91XX_CONFIG_PROC_FILE     "gt9xx_config"
-#define GTP_POLL_TIME         10    
+#define GTP_POLL_TIME         10
 #define GTP_ADDR_LENGTH       2
 #define GTP_CONFIG_MIN_LENGTH 186
 #define GTP_CONFIG_MAX_LENGTH 240
@@ -277,7 +277,7 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 #define GTP_REG_MAIN_CLK                0x8020
 #define GTP_REG_CHIP_TYPE               0x8000
 #define GTP_REG_HAVE_KEY                0x804E
-#define GTP_REG_MATRIX_DRVNUM           0x8069     
+#define GTP_REG_MATRIX_DRVNUM           0x8069
 #define GTP_REG_MATRIX_SENNUM           0x806A
 
 #define GTP_FL_FW_BURN              0x00
@@ -301,7 +301,7 @@ extern char product_id[GTP_PRODUCT_ID_MAXSIZE];
 #define GTP_RQST_RESPONDED              0x00
 #define GTP_RQST_IDLE                   0xFF
 
-
+//******************** For GT9XXF End **********************//
 // Registers define
 #define GTP_READ_COOR_ADDR    0x814E
 #define GTP_REG_SLEEP         0x8040

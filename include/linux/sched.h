@@ -532,6 +532,7 @@ extern void schedule_preempt_disabled(void);
 
 extern long io_schedule_timeout(long timeout);
 
+extern int set_task_boost(int boost, u64 period);
 static inline void io_schedule(void)
 {
 	io_schedule_timeout(MAX_SCHEDULE_TIMEOUT);
@@ -1082,12 +1083,13 @@ struct wake_q_node {
 struct wake_q_head {
 	struct wake_q_node *first;
 	struct wake_q_node **lastp;
+	int count;
 };
 
 #define WAKE_Q_TAIL ((struct wake_q_node *) 0x01)
 
 #define WAKE_Q(name)					\
-	struct wake_q_head name = { WAKE_Q_TAIL, &name.first }
+	struct wake_q_head name = { WAKE_Q_TAIL, &name.first, 0 }
 
 extern void wake_q_add(struct wake_q_head *head,
 		       struct task_struct *task);
@@ -1718,8 +1720,12 @@ struct task_struct {
 	const struct sched_class *sched_class;
 	struct sched_entity se;
 	struct sched_rt_entity rt;
-	u64 last_sleep_ts;
+	u64				 last_sleep_ts;
 	u64 last_cpu_selected_ts;
+
+	int				boost;
+	u64				boost_period;
+	u64				boost_expires;
 #ifdef CONFIG_SCHED_WALT
 	struct ravg ravg;
 	/*
@@ -3858,6 +3864,7 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
 
 extern struct atomic_notifier_head load_alert_notifier_head;
 
+extern long msm_sched_setaffinity(pid_t pid, struct cpumask *new_mask);
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 

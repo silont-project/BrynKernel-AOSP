@@ -2000,7 +2000,7 @@ static void wcnss_notify_vbat(enum qpnp_tm_state state, void *ctx)
 	if (rc)
 		wcnss_log(ERR, "%s: tm setup failed: %d\n", __func__, rc);
 	else
-		schedule_delayed_work(&penv->vbatt_work,
+			schedule_delayed_work(&penv->vbatt_work,
 				      msecs_to_jiffies(2000));
 
 	mutex_unlock(&penv->vbat_monitor_mutex);

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2015-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (c) 2015-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -298,17 +298,17 @@
 		qcom,poll5 = <0 0x0 2 0x0 1 0>;
 		qcom,mem5 = <64 0x0A04 2 0x0 1 0>;
 
-                qcom,page6 = <1 0x0100 2 0x01 1 0>;
-                qcom,poll6 = <0 0x0 2 0x0 1 0>;
-                qcom,mem6 = <0 0x0 2 0x0 1 0>;
+		qcom,page6 = <1 0x0100 2 0x01 1 0>;
+		qcom,poll6 = <0 0x0 2 0x0 1 0>;
+		qcom,mem6 = <0 0x0 2 0x0 1 0>;
 
-                qcom,page7 = <1 0x0A02 2 0x00 1 0>;
-                qcom,poll7 = <0 0x0 2 0x0 1 0>;
-                qcom,mem7 = <0 0x0 2 0x0 1 0>;
+		qcom,page7 = <1 0x0A02 2 0x00 1 0>;
+		qcom,poll7 = <0 0x0 2 0x0 1 0>;
+		qcom,mem7 = <0 0x0 2 0x0 1 0>;
 
-                qcom,page8 = <1 0x0A00 2 0x01 1 0>;
-                qcom,poll8 = <0 0x0 2 0x0 1 0>;
-                qcom,mem8 = <8 0x0A04 2 0x0 1 0>;
+		qcom,page8 = <1 0x0A00 2 0x01 1 0>;
+		qcom,poll8 = <0 0x0 2 0x0 1 0>;
+		qcom,mem8 = <8 0x0A04 2 0x0 1 0>;
 
 		cam_vio-supply = <&pm8953_l6>;
 		cam_vana-supply = <&pm8953_l22>;
@@ -392,17 +392,17 @@
 		qcom,poll5 = <0 0x0 2 0x0 1 0>;
 		qcom,mem5 = <64 0x0A04 2 0x0 1 0>;
 
-                qcom,page6 = <1 0x0100 2 0x01 1 0>;
-                qcom,poll6 = <0 0x0 2 0x0 1 0>;
-                qcom,mem6 = <0 0x0 2 0x0 1 0>;
+		qcom,page6 = <1 0x0100 2 0x01 1 0>;
+		qcom,poll6 = <0 0x0 2 0x0 1 0>;
+		qcom,mem6 = <0 0x0 2 0x0 1 0>;
 
-                qcom,page7 = <1 0x0A02 2 0x00 1 0>;
-                qcom,poll7 = <0 0x0 2 0x0 1 0>;
-                qcom,mem7 = <0 0x0 2 0x0 1 0>;
+		qcom,page7 = <1 0x0A02 2 0x00 1 0>;
+		qcom,poll7 = <0 0x0 2 0x0 1 0>;
+		qcom,mem7 = <0 0x0 2 0x0 1 0>;
 
-                qcom,page8 = <1 0x0A00 2 0x01 1 0>;
-                qcom,poll8 = <0 0x0 2 0x0 1 0>;
-                qcom,mem8 = <8 0x0A04 2 0x0 1 0>;
+		qcom,page8 = <1 0x0A00 2 0x01 1 0>;
+		qcom,poll8 = <0 0x0 2 0x0 1 0>;
+		qcom,mem8 = <8 0x0A04 2 0x0 1 0>;
 
 		cam_vio-supply = <&pm8953_l6>;
 		cam_vana-supply = <&pm8953_l22>;
@@ -473,13 +473,13 @@
 		qcom,cam-vreg-op-mode = <105000 80000>;
 		pinctrl-names = "cam_default", "cam_suspend";
 		pinctrl-0 = <&cam_sensor_mclk1_default
-		                &cam_sensor_front1_default>;
+				       &cam_sensor_front1_default>;
 		pinctrl-1 = <&cam_sensor_mclk1_sleep
-		                &cam_sensor_front1_sleep>;
+				       &cam_sensor_front1_sleep>;
 		gpios = <&tlmm 27 0>,
-		        <&tlmm 129 0>,
-		        <&tlmm 39 0>,
-		        <&tlmm 137 0>;
+			      <&tlmm 129 0>,
+			      <&tlmm 39 0>,
+			      <&tlmm 137 0>;
 		qcom,gpio-reset = <1>;
 		qcom,gpio-vdig = <2>;
 		qcom,gpio-vana = <3>;
@@ -623,7 +623,7 @@
 		qcom,csiphy-sd-index = <1>;
 		qcom,csid-sd-index = <1>;
 		qcom,mount-angle = <90>;
-                qcom,led-flash-src = <&led_flash0>;
+		qcom,led-flash-src = <&led_flash0>;
 		qcom,eeprom-src = <&eeprom2 &eeprom3>;
 		cam_vana-supply = <&pm8953_l22>;
 		cam_vio-supply = <&pm8953_l6>;
@@ -685,7 +685,7 @@
 		qcom,gpio-req-tbl-label = "CAMIF_MCLK2",
 					  "CAM_RESET2",
 					  "CAM_VDIG2",
-                      "CAM_VANA2";
+					  "CAM_VANA2";
 		qcom,sensor-position = <1>;
 		qcom,sensor-mode = <0>;
 		qcom,cci-master = <1>;

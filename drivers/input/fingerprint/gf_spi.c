@@ -1,7 +1,7 @@
 /*
  * TEE driver for goodix fingerprint sensor
  * Copyright (C) 2016 Goodix
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ static int SPIDEV_MAJOR;
 static DECLARE_BITMAP(minors, N_SPI_MINORS);
 static LIST_HEAD(device_list);
 static DEFINE_MUTEX(device_list_lock);
-
+//static struct wake_lock fp_wakelock;
 static struct wakeup_source fp_ws;//for kernel 4.9
 static struct gf_dev gf;
 
@@ -105,19 +105,19 @@ static struct gf_key_map maps[] = {
 };
 #endif
 struct gf_key_map maps[] = {
-	{ EV_KEY, KEY_HOME },
-	{ EV_KEY, KEY_MENU },
-	{ EV_KEY, KEY_BACK },
-	{ EV_KEY, KEY_POWER },
-	{ EV_KEY, KEY_UP },
-	{ EV_KEY, KEY_DOWN },
-	{ EV_KEY, KEY_RIGHT },
-	{ EV_KEY, KEY_LEFT },
-	{ EV_KEY, KEY_CAMERA },
-	{ EV_KEY, KEY_F9 },
-	{ EV_KEY, KEY_F19 },
-	{ EV_KEY, KEY_ENTER},
-	{ EV_KEY, KEY_KPENTER },
+        { EV_KEY, KEY_HOME },
+        { EV_KEY, KEY_MENU },
+        { EV_KEY, KEY_BACK },
+        { EV_KEY, KEY_POWER },
+        { EV_KEY, KEY_UP },
+        { EV_KEY, KEY_DOWN },
+        { EV_KEY, KEY_RIGHT },
+        { EV_KEY, KEY_LEFT },
+        { EV_KEY, KEY_CAMERA },
+        { EV_KEY, KEY_F9 },
+        { EV_KEY, KEY_F19 },
+        { EV_KEY, KEY_ENTER},
+        { EV_KEY, KEY_KPENTER },
 };
 
 static void gf_enable_irq(struct gf_dev *gf_dev)
@@ -348,7 +348,7 @@ static irqreturn_t gf_irq(int irq, void *handle)
 #if defined(GF_NETLINK_ENABLE)
 	char msg = GF_NET_EVENT_IRQ;
 	struct gf_dev *gf_dev = &gf;
-
+	//wake_lock_timeout(&fp_wakelock, msecs_to_jiffies(WAKELOCK_HOLD_TIME));
 	__pm_wakeup_event(&fp_ws, WAKELOCK_HOLD_TIME);//for kernel 4.9
 	sendnlmsg(&msg);
 	if (gf_dev->device_available == 1) {
@@ -815,10 +815,10 @@ static int gf_probe(struct platform_device *pdev)
 	spi_clock_set(gf_dev, 1000000);
 #endif
 
-
+	//gf_dev->notifier = goodix_noti_block;
 	//fb_register_client(&gf_dev->notifier);
 
-
+	//wake_lock_init(&fp_wakelock, WAKE_LOCK_SUSPEND, "fp_wakelock");
 	wakeup_source_init(&fp_ws, "fp_ws");//for kernel 4.9
 
 	proc_entry = proc_create(PROC_NAME, 0644, NULL, &proc_file_ops);
@@ -865,8 +865,8 @@ static int gf_remove(struct platform_device *pdev)
 {
 	struct gf_dev *gf_dev = &gf;
 
-
-	wakeup_source_trash(&fp_ws);
+	//wake_lock_destroy(&fp_wakelock);
+	wakeup_source_trash(&fp_ws);//for kernel 4.9
 	//fb_unregister_client(&gf_dev->notifier);
 	if (gf_dev->input)
 		input_unregister_device(gf_dev->input);

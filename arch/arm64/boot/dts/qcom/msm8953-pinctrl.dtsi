@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -84,7 +84,7 @@
 					pins = "gpio139";
 					function = "gpio";
 				};
-                config {
+				config {
 					pins = "gpio139";
 					drive-strength = <8>;
 					output-high;
@@ -98,7 +98,7 @@
 					pins = "gpio139";
 					function = "gpio";
 				};
-                config {
+				config {
 					pins = "gpio139";
 					drive-strength = <2>;
 					bias-disable;
@@ -179,7 +179,7 @@
 			config {
 				pins = "gpio26";
 				bias-disable; /* No PULL */
-				drive-strength = <2>; /* 2 MA */
+				drive-strength = <4>; /* 2 MA */
 			};
 		};
 
@@ -194,7 +194,7 @@
 			config {
 				pins = "gpio26";
 				bias-pull-down; /* PULL DOWN */
-				drive-strength = <2>; /* 2 MA */
+				drive-strength = <4>; /* 2 MA */
 			};
 		};
 
@@ -1554,7 +1554,7 @@
 				pins = "gpio65";
 				drive-strength = <8>;
 				bias-pull-down;
-                output-low;
+				output-low;
 			};
 		};
 
@@ -1625,7 +1625,6 @@
 		};
 
 		/* add pingrp for touchscreen */
-        //copy modify by likang @20171130
 		pmx_ts_int_active {
 			ts_int_active: ts_int_active {
 				mux {
@@ -1637,7 +1636,7 @@
 					pins = "gpio65";
 					drive-strength = <8>;
 					bias-pull-up;
-                    output-high;
+					output-high;
 				};
 			};
 		};
@@ -1653,7 +1652,7 @@
 					pins = "gpio65";
 					drive-strength = <8>;
 					bias-pull-down;
-                    output-low;
+					output-low;
 				};
 			};
 		};
@@ -1669,7 +1668,7 @@
 					pins = "gpio64";
 					drive-strength = <8>;
 					bias-pull-up;
-                    output-high;
+					output-high;
 				};
 			};
 		};
@@ -1685,42 +1684,42 @@
 					pins = "gpio64";
 					drive-strength = <8>;
 					bias-pull-down;
-                    output-low;
+					output-low;
 				};
 			};
 		};
- pmx_ts_int_release {
-            ts_as_int: ts_as_int {
-                mux {
-                    pins = "gpio65";
-                    function = "gpio";
-                };
+		pmx_ts_int_release {
+			ts_as_int: ts_as_int {
+				mux {
+					pins = "gpio65";
+					function = "gpio";
+				};
 
-                config {
-                    pins = "gpio65";
-                    drive-strength = <8>;
-                    input-enable;
-                    bias-disable;
-                };
-            };
-        };
+				config {
+					pins = "gpio65";
+					drive-strength = <8>;
+					input-enable;
+					bias-disable;
+				};
+			};
+		};
 
-        pmx_ts_reset_release {
-            ts_as_reset: ts_as_reset {
-                mux {
-                    pins = "gpio64";
-                    function = "gpio";
-                };
+		pmx_ts_reset_release {
+			ts_as_reset: ts_as_reset {
+				mux {
+					pins = "gpio64";
+					function = "gpio";
+				};
 
-                config {
-                    pins = "gpio64";
-                    drive-strength = <8>;
-                    input-enable;
-                    bias-disable;
-                };
-            };
-        };
-        //copy end by likang
+				config {
+					pins = "gpio64";
+					drive-strength = <8>;
+					input-enable;
+					bias-disable;
+				};
+			};
+		};
+		//copy end by likang
 		pmx_ts_release {
 			ts_release: ts_release {
 				mux {

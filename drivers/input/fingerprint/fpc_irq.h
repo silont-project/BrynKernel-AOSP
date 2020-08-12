@@ -3,7 +3,7 @@
 #include <linux/platform_device.h>
 #include <linux/mutex.h>
 #include <linux/module.h>
-
+//#include <linux/wakelock.h>
 #include <linux/regulator/consumer.h>
 
 struct fpc_gpio_info;
@@ -18,11 +18,11 @@ struct fpc_data {
 
 	bool wakeup_enabled;
 
-
-	struct wakeup_source ttw_ws;
+	//struct wake_lock ttw_wl;
+	struct wakeup_source ttw_ws;//for kernel 4.9
 
 	struct regulator *vdd_tx;
-
+	
 	bool power_enabled;
 	bool use_regulator_for_bezel;
 	const struct fpc_gpio_info *hwabs;

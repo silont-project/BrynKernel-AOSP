@@ -1017,13 +1017,13 @@ static int msm_dig_cdc_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		/* enable HPF */
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x08, 0x00);
 
-		schedule_delayed_work(
+			schedule_delayed_work(
 			    &msm_dig_cdc->tx_mute_dwork[decimator - 1].dwork,
 			    msecs_to_jiffies(tx_unmute_delay));
 		if (tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
 				CF_MIN_3DB_150HZ) {
 
-			schedule_delayed_work(&tx_hpf_work[decimator - 1].dwork,
+					schedule_delayed_work(&tx_hpf_work[decimator - 1].dwork,
 					msecs_to_jiffies(300));
 		}
 		/* apply the digital gain after the decimator is enabled*/

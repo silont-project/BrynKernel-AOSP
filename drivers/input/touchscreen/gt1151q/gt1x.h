@@ -1,19 +1,19 @@
 /* drivers/input/touchscreen/gt1x.h
- *
+ * 
  * 2010 - 2013 Goodix Technology.
- *
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be a reference
- * to you, when you are integrating the GOODiX's CTP IC into your system,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * 
+ * This program is distributed in the hope that it will be a reference 
+ * to you, when you are integrating the GOODiX's CTP IC into your system, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
  * General Public License for more details.
- *
- * Version: 1.4
+ * 
+ * Version: 1.4   
  * Release Date:  2015/07/10
  */
 
@@ -35,7 +35,7 @@
 
 #define IIC_MAX_TRANSFER_SIZE       250
 
-
+//lihongshuai@20181102
 #define GTP_ITO_TEST_SELF      1
 
 
@@ -46,12 +46,12 @@ extern int gt1x_int_gpio;
 #define GTP_RST_PORT gt1x_rst_gpio
 #define GTP_INT_PORT gt1x_int_gpio
 #else
-#define GTP_RST_PORT    64
-#define GTP_INT_PORT    65
+#define GTP_RST_PORT    64	//S5PV210_GPJ3(6)
+#define GTP_INT_PORT    65	//S5PV210_GPH1(3)
 #endif
 
 #define GTP_INT_IRQ     gpio_to_irq(GTP_INT_PORT)
-
+//#define GTP_INT_CFG     S3C_GPIO_SFN(0xF)
 
 #define GTP_GPIO_AS_INPUT(pin)          do{\
                                             gpio_direction_input(pin);\

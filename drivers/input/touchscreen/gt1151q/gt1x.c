@@ -19,7 +19,7 @@
 
 #include <linux/irq.h>
 #include "gt1x.h"
-#include "gt1x_generic.h"
+#include "gt1x_generic.h" //add by snow
 #if GTP_ICS_SLOT_REPORT
 #include <linux/input/mt.h>
 #endif
@@ -29,12 +29,12 @@
 /*shenwenbin add for show TP info for *#87# 20180120 end*/
 
 
-
+//qujiong
 extern char g_lcd_id[128];
 
 static struct work_struct gt1x_work;
 
-
+//lihongshuai@20181108
 static struct work_struct gt_resmue;
 static struct work_struct gt_suspend;
 
@@ -51,17 +51,17 @@ int gt1x_rst_gpio;
 int gt1x_int_gpio;
 #endif
 
-
+//lihongshuai@20181030
 extern s32 gtp_test_sysfs_init(void);
-
+//lihongshuai@20181030
 
 
 /*shenwenbin add for runin 20180120 begin*/
 extern int i2c_devinfo_device_write(char *buf);
 /*shenwenbin add for runin 20180120 end*/
-
+//begin songxihao 20170929 for add lockdown_info sys& fw_version sys
 char gt1x_tp_lockdown_info[128];
-unsigned char get_lockdown_info(struct i2c_client *client,char *pProjectCode);
+unsigned char get_lockdown_info(struct i2c_client *client, char *pProjectCode);
 
 static int gt1x_register_powermanger(void);
 static int gt1x_unregister_powermanger(void);
@@ -73,7 +73,7 @@ static int gt1x_unregister_powermanger(void);
  * @len: the bytes of data to write.
  *Return: 0: success, otherwise: failed
  */
-s32 gt1x_i2c_write(u16 addr, u8 *buffer, s32 len)
+s32 gt1x_i2c_write(u16 addr, u8 * buffer, s32 len)
 {
 	struct i2c_msg msg = {
 		.flags = 0,
@@ -89,7 +89,7 @@ s32 gt1x_i2c_write(u16 addr, u8 *buffer, s32 len)
  * @len: the bytes of data to write.
  *Return: 0: success, otherwise: failed
  */
-s32 gt1x_i2c_read(u16 addr, u8 *buffer, s32 len)
+s32 gt1x_i2c_read(u16 addr, u8 * buffer, s32 len)
 {
 	u8 addr_buf[GTP_ADDR_LENGTH] = { (addr >> 8) & 0xFF, addr & 0xFF };
 	struct i2c_msg msgs[2] = {
@@ -106,7 +106,7 @@ s32 gt1x_i2c_read(u16 addr, u8 *buffer, s32 len)
 }
 
 static spinlock_t irq_lock;
-static s32 irq_is_disable;
+static s32 irq_is_disable = 0;
 
 /**
  * gt1x_irq_enable - enable irq function.
@@ -144,129 +144,129 @@ void gt1x_irq_disable(void)
 	spin_unlock_irqrestore(&irq_lock, irqflags);
 }
 /*add for gt1x_select_gesture_mode  by qujiong*/
-int gt1x_select_gesture_mode(struct input_dev *dev,unsigned int type,unsigned int code,int value)
+int gt1x_select_gesture_mode(struct input_dev *dev, unsigned int type, unsigned int code, int value)
 {
 	GTP_DEBUG("[GESTURE]enter gt1x the gesture select!!!!");
-	if ((type == EV_SYN)&& (code == SYN_CONFIG)){
-
+	if((type == EV_SYN )&& (code == SYN_CONFIG)){
+		//mutex_lock(&gesture_data_mutex);
 
 		if (value == 5){
-
-
-
+			//GTP_DEBUG("[GESTURE]enable gesture");
+			//gesture_enabled = 1;
+			//memset(gestures_flag, 0xFF, sizeof(gestures_flag));
 			gt1x_gesture_debug(1);
 		}else {
-
-
-
-
+			//GTP_DEBUG("[GESTURE]disable gesture");
+			//gesture_enabled = 0;
+			//memset(gestures_flag, 0x00, sizeof(gestures_flag));
+			//gesture_doze_status = DOZE_DISABLED;
 			gt1x_gesture_debug(0);
 		}
 
-
+		//mutex_unlock(&gesture_data_mutex);
 	}
 
 	return 0;
 }
 
-
+//Begin xiaopei 2018-3-9 add for tp gesture node
 static struct kobject *gt_tp_device;
 static ssize_t gesture_store(struct device *dev, struct device_attribute *attr, const char *buff, size_t count)
 {
-
-    if ((strncmp(buff, "1", 1)  == 0))
-    {
-
-      gt1x_gesture_debug(1);
-    }
+	//printk(" buff =  %s \n",buff);
+	if((strncmp(buff, "1", 1)  == 0))
+	{
+	  // gesture_enabled = 1;
+	  gt1x_gesture_debug(1);
+	}
 	else
 	{
-
-      gt1x_gesture_debug(0);
+	  // gesture_enabled = 0;
+	  gt1x_gesture_debug(0);
 	}
-    return count;
+	return count;
 }
 static ssize_t gesture_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-     ssize_t count;
-     count = sprintf(buf, "gt_gesture_enable =  %d\n", gesture_enabled);
-     return count;
+	 ssize_t count;
+	 count = sprintf(buf, "gt_gesture_enable =  %d\n", gesture_enabled);
+	 return count;
 }
 static DEVICE_ATTR(wakeup_gesture_enable, S_IRUGO|S_IWUSR, gesture_show, gesture_store);
 
 static int tp_gesture_creat_sys_entry(void)
 {
-    int32_t rc = 0;
+	int32_t rc = 0;
 
 	gt_tp_device = kobject_create_and_add("android_touch", NULL);
 	if (gt_tp_device == NULL) {
-
+		//printk(" %s: subsystem_register failed\n", __func__);
 		rc = -ENOMEM;
 		return rc ;
 	}
 	rc = sysfs_create_file(gt_tp_device, &dev_attr_wakeup_gesture_enable.attr);
 	if (rc) {
-
+		//printk(" %s: sysfs_create_file failed\n", __func__);
 		kobject_del(gt_tp_device);
 	}
 	printk(" %s: sysfs_create_file succeed\n", __func__);
 	return 0 ;
 }
-
-
+//add for tp gesture node end
+//begin songxihao 20170929 for add lockdown_info sys & fw_version sys
 unsigned char get_lockdown_info(struct i2c_client *client,char *pProjectCode)
 {
 
-        u8 reg_val[8] = {0};
-        int ret;
-        ret=gt1x_i2c_read(GTP_REG_LOCKDOWN,reg_val,8);
-        if (ret<0){
-                GTP_ERROR("i2c read lockdown info failed!!!\n");
-        }
+		u8 reg_val[8] = {0};
+		int ret;
+		ret=gt1x_i2c_read(GTP_REG_LOCKDOWN,reg_val,8);
+		if(ret<0){
+				GTP_ERROR("i2c read lockdown info failed!!!\n");
+		}
 
-        sprintf(pProjectCode,"%02x%02x%02x%02x%02x%02x%02x%02x",reg_val[0],reg_val[1],reg_val[2],reg_val[3],reg_val[4],reg_val[5],reg_val[6],reg_val[7]);
-        return 0;
+		sprintf(pProjectCode, "%02x%02x%02x%02x%02x%02x%02x%02x", reg_val[0], reg_val[1], reg_val[2], reg_val[3], reg_val[4], reg_val[5], reg_val[6], reg_val[7]);
+		return 0;
 }
 
 static ssize_t goodix_lockdown_show(struct device *dev,
-                                struct device_attribute *attr, char *buf)
+					            struct device_attribute *attr, char *buf)
 {
-        return snprintf(buf, 127, "%s\n", gt1x_tp_lockdown_info);
+		return snprintf(buf, 127, "%s\n", gt1x_tp_lockdown_info);
 }
 
 static ssize_t goodix_lockdown_store(struct device *dev,
-                                struct device_attribute *attr,
-                                const char *buf, size_t size)
+					            struct device_attribute *attr,
+					            const char *buf, size_t size)
 {
-        if (size > 49)
-                return -EINVAL;
-        strlcpy(gt1x_tp_lockdown_info, buf, size);
-        if (gt1x_tp_lockdown_info[size-1] == '\n')
-                gt1x_tp_lockdown_info[size-1] = 0;
-        return size;
+		if (size > 49)
+				return -EINVAL;
+		strlcpy(gt1x_tp_lockdown_info, buf, size);
+		if (gt1x_tp_lockdown_info[size-1] == '\n')
+				gt1x_tp_lockdown_info[size-1] = 0;
+		return size;
 }
 
 static ssize_t goodix_fwversion_show(struct device *dev,
-                                struct device_attribute *attr, char *buf)
+					            struct device_attribute *attr, char *buf)
 {
 
-        int count =0;
-
-
-
-
-
-
-
-        count += sprintf(buf, "FW:%06X\n",gt1x_version.patch_id);
-        return count;
+		int count =0;//,ret = 0;
+		//u16 version_info = 0;
+		//ret = gt1x_i2c_read(GTP_REG_VERSION, &version_info, 6);
+	//ret = gt1x_read_version(&gt1x_version);
+//	if (ret < 0)
+//    {
+//        GTP_ERROR("Read version_info failed.");
+//    }
+		count += sprintf(buf, "FW:%06X\n",gt1x_version.patch_id);
+		return count;
 }
 
 static ssize_t goodix_fwversion_store(struct device *dev,
-                                struct device_attribute *attr,
-                                const char *buf, size_t size)
+					            struct device_attribute *attr,
+					            const char *buf, size_t size)
 {
-        return -EPERM;
+		return -EPERM;
 }
 
 static DEVICE_ATTR(tp_lock_down_info, S_IWUSR|S_IRUGO,goodix_lockdown_show, goodix_lockdown_store);
@@ -275,14 +275,14 @@ static DEVICE_ATTR(fw_version, S_IWUSR|S_IRUGO,goodix_fwversion_show, goodix_fwv
 /* add your attr in here*/
 static struct attribute *goodix_attributes[] =
 {
-    &dev_attr_tp_lock_down_info.attr,
-    &dev_attr_fw_version.attr,
-    NULL
+	&dev_attr_tp_lock_down_info.attr,
+	&dev_attr_fw_version.attr,
+	NULL
 };
 
 static struct attribute_group goodix_attribute_group =
 {
-    .attrs = goodix_attributes
+	.attrs = goodix_attributes
 };
 
 /************************************************************************
@@ -292,21 +292,21 @@ static struct attribute_group goodix_attribute_group =
 * Output: no
 * Return: success =0
 ***********************************************************************/
-int goodix_create_sysfs(struct i2c_client *client)
+int goodix_create_sysfs(struct i2c_client * client)
 {
-    int err;
-    err = sysfs_create_group(&client->dev.kobj, &goodix_attribute_group);
-    if (0 != err)
-    {
-        printk("[EX]: sysfs_create_group() failed!!");
-        sysfs_remove_group(&client->dev.kobj, &goodix_attribute_group);
-        return -EIO;
-    }
-    else
-    {
-        printk("[EX]: sysfs_create_group() succeeded!!");
-    }
-    return err;
+	int err;
+	err = sysfs_create_group(&client->dev.kobj, &goodix_attribute_group);
+	if (0 != err)
+	{
+		printk("[EX]: sysfs_create_group() failed!!");
+		sysfs_remove_group(&client->dev.kobj, &goodix_attribute_group);
+		return -EIO;
+	}
+	else
+	{
+		printk("[EX]: sysfs_create_group() succeeded!!");
+	}
+	return err;
 }
 
 /************************************************************************
@@ -317,30 +317,30 @@ int goodix_create_sysfs(struct i2c_client *client)
 * Return: no
 ***********************************************************************/
 
-int goodix_remove_sysfs(struct i2c_client *client)
+int goodix_remove_sysfs(struct i2c_client * client)
 {
-    sysfs_remove_group(&client->dev.kobj, &goodix_attribute_group);
-    return 0;
+	sysfs_remove_group(&client->dev.kobj, &goodix_attribute_group);
+	return 0;
 }
-
+//end songxihao 20170929
 
 #ifndef GTP_CONFIG_OF
 int gt1x_power_switch(s32 state)
 {
-    return 0;
+	return 0;
 }
 #endif
 
-int gt1x_debug_proc(u8 *buf, int count)
+int gt1x_debug_proc(u8 * buf, int count)
 {
-	return -EPERM;
+	return -1;
 }
 
 #if GTP_CHARGER_SWITCH
 u32 gt1x_get_charger_status(void)
 {
 	return 0;
-
+   //#error Need to get charger status of your platform.
 }
 #endif
 
@@ -354,7 +354,7 @@ u32 gt1x_get_charger_status(void)
 static irqreturn_t gt1x_ts_irq_handler(int irq, void *dev_id)
 {
 	GTP_DEBUG_FUNC();
-    gt1x_irq_disable();
+	gt1x_irq_disable();
 	queue_work(gt1x_wq, &gt1x_work);
 	return IRQ_HANDLED;
 }
@@ -383,8 +383,8 @@ void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 
 	input_report_abs(input_dev, ABS_MT_POSITION_X, x);
 	input_report_abs(input_dev, ABS_MT_POSITION_Y, y);
-	input_report_abs(input_dev, ABS_MT_PRESSURE, size+size/3);
-	input_report_abs(input_dev, ABS_MT_TOUCH_MAJOR, size/10);
+	input_report_abs(input_dev, ABS_MT_PRESSURE, size+size/3);//tom
+	input_report_abs(input_dev, ABS_MT_TOUCH_MAJOR, size/10);//tom
 
 #if !GTP_ICS_SLOT_REPORT
 	input_mt_sync(input_dev);
@@ -418,10 +418,10 @@ static void gt1x_ts_work_func(struct work_struct *work)
 	s32 ret = 0;
 	u8 point_data[11] = { 0 };
 
-    if (update_info.status) {
-        GTP_DEBUG("Ignore interrupts during fw update.");
-        return;
-    }
+	if (update_info.status) {
+		GTP_DEBUG("Ignore interrupts during fw update.");
+		return;
+	}
 
 #if GTP_GESTURE_WAKEUP
 	ret = gesture_event_handler(input_dev);
@@ -432,7 +432,7 @@ static void gt1x_ts_work_func(struct work_struct *work)
 
 	if (gt1x_halt) {
 		GTP_DEBUG("Ignore interrupts after suspend...");
-        return;
+		return;
 	}
 
 	ret = gt1x_i2c_read(GTP_READ_COOR_ADDR, point_data, sizeof(point_data));
@@ -454,7 +454,7 @@ static void gt1x_ts_work_func(struct work_struct *work)
 		if (!hotknot_paired_flag)
 #endif
 		{
-
+			//GTP_ERROR("buffer not ready:0x%02x", finger);
 			goto exit_eint;
 		}
 	}
@@ -486,7 +486,7 @@ exit_work_func:
 		}
 	}
 exit_eint:
-    gt1x_irq_enable();
+	gt1x_irq_enable();
 
 }
 
@@ -504,28 +504,28 @@ static struct regulator *vcc_i2c;
 static int gt1x_parse_dt(struct device *dev)
 {
 	struct device_node *np;
-    int ret = 0;
+	int ret = 0;
 
-    if (!dev)
-        return -ENODEV;
+	if (!dev)
+		return -ENODEV;
 
-    np = dev->of_node;
+	np = dev->of_node;
 	gt1x_int_gpio = of_get_named_gpio(np, "goodix,irq-gpio", 0);
 	gt1x_rst_gpio = of_get_named_gpio(np, "goodix,reset-gpio", 0);
 
-    if (!gpio_is_valid(gt1x_int_gpio) || !gpio_is_valid(gt1x_rst_gpio)) {
-        GTP_ERROR("Invalid GPIO, irq-gpio:%d, rst-gpio:%d",
-            gt1x_int_gpio, gt1x_rst_gpio);
-        return -EINVAL;
-    }
+	if (!gpio_is_valid(gt1x_int_gpio) || !gpio_is_valid(gt1x_rst_gpio)) {
+		GTP_ERROR("Invalid GPIO, irq-gpio:%d, rst-gpio:%d",
+			gt1x_int_gpio, gt1x_rst_gpio);
+		return -EINVAL;
+	}
 
-    vdd_ana = regulator_get(dev, "vdd_ana");
-    if (IS_ERR(vdd_ana)) {
+	vdd_ana = regulator_get(dev, "vdd_ana");
+	if (IS_ERR(vdd_ana)) {
 	    GTP_ERROR("regulator get of vdd_ana failed");
 	    ret = PTR_ERR(vdd_ana);
 	    vdd_ana = NULL;
 	    return ret;
-    }
+	}
 
 	vcc_i2c = regulator_get(dev, "vcc_i2c");
 	if (IS_ERR(vcc_i2c)) {
@@ -534,11 +534,11 @@ static int gt1x_parse_dt(struct device *dev)
 		vcc_i2c = NULL;
 		goto ERR_GET_VCC;
 	}
-    return 0;
+	return 0;
 ERR_GET_VCC:
-    regulator_put(vdd_ana);
-    vdd_ana = NULL;
-    return ret;
+	regulator_put(vdd_ana);
+	vdd_ana = NULL;
+	return ret;
 
 }
 
@@ -628,9 +628,9 @@ int gt1x_power_switch(int on)
 	int ret;
 	struct i2c_client *client = gt1x_i2c_client;
 
-    if (!client || !vdd_ana || !vcc_i2c)
-        return -EPERM;
-    pinctrl_select_state(gt_pinctrl.ts_pinctrl,gt_pinctrl.erst_output_low);
+	if (!client || !vdd_ana || !vcc_i2c)
+		return -1;
+	pinctrl_select_state(gt_pinctrl.ts_pinctrl,gt_pinctrl.erst_output_low);
 	pinctrl_select_state(gt_pinctrl.ts_pinctrl,gt_pinctrl.int_out_low);
 
 	if (on) {
@@ -651,22 +651,22 @@ int gt1x_power_switch(int on)
 
 static void gt1x_remove_gpio_and_power(void)
 {
-    if (gpio_is_valid(gt1x_int_gpio))
-        gpio_free(gt1x_int_gpio);
+	if (gpio_is_valid(gt1x_int_gpio))
+		gpio_free(gt1x_int_gpio);
 
-    if (gpio_is_valid(gt1x_rst_gpio))
-        gpio_free(gt1x_rst_gpio);
+	if (gpio_is_valid(gt1x_rst_gpio))
+		gpio_free(gt1x_rst_gpio);
 
 #ifdef GTP_CONFIG_OF
-    if (vcc_i2c)
-        regulator_put(vcc_i2c);
+	if (vcc_i2c)
+		regulator_put(vcc_i2c);
 
-    if (vdd_ana)
-        regulator_put(vdd_ana);
+	if (vdd_ana)
+		regulator_put(vdd_ana);
 #endif
 
-    if (gt1x_i2c_client && gt1x_i2c_client->irq)
-        free_irq(gt1x_i2c_client->irq, gt1x_i2c_client);
+	if (gt1x_i2c_client && gt1x_i2c_client->irq)
+		free_irq(gt1x_i2c_client->irq, gt1x_i2c_client);
 
 }
 
@@ -694,7 +694,7 @@ static s32 gt1x_request_io_port(void)
 		ret = -ENODEV;
 	}
 
-
+	//GTP_GPIO_AS_INPUT(GTP_RST_PORT); //lihongshuai@20181105
 	if (ret < 0) {
 		gpio_free(GTP_RST_PORT);
 		gpio_free(GTP_INT_PORT);
@@ -708,7 +708,7 @@ static s32 gt1x_request_io_port(void)
  * Return
  *      0: succeed, -1: failed.
  */
-
+ //extern void gt1x_int_as_input(void); xiaopei
 static s32 gt1x_request_irq(void)
 {
 	s32 ret = -1;
@@ -716,14 +716,14 @@ static s32 gt1x_request_irq(void)
 
 	GTP_DEBUG_FUNC();
 	GTP_DEBUG("INT trigger type:%x", gt1x_int_type);
-
+	//gt1x_int_as_input();//xiaopei add
 	ret = request_irq(gt1x_i2c_client->irq, gt1x_ts_irq_handler, irq_table[gt1x_int_type], gt1x_i2c_client->name, gt1x_i2c_client);
 	if (ret) {
 		GTP_ERROR("Request IRQ failed!ERRNO:%d.", ret);
 		GTP_GPIO_AS_INPUT(GTP_INT_PORT);
 		gpio_free(GTP_INT_PORT);
 
-		return -EPERM;
+		return -1;
 	} else {
 		gt1x_irq_disable();
 		return 0;
@@ -753,9 +753,9 @@ static s8 gt1x_request_input_dev(void)
 	input_dev->evbit[0] = BIT_MASK(EV_SYN) | BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
 #if GTP_ICS_SLOT_REPORT
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3, 7, 0))
-    input_mt_init_slots(input_dev, GTP_MAX_TOUCH, INPUT_MT_DIRECT);
+	input_mt_init_slots(input_dev, GTP_MAX_TOUCH, INPUT_MT_DIRECT);
 #else
-    input_mt_init_slots(input_dev, GTP_MAX_TOUCH);
+	input_mt_init_slots(input_dev, GTP_MAX_TOUCH);
 #endif
 #endif
 	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
@@ -770,10 +770,10 @@ static s8 gt1x_request_input_dev(void)
 #if GTP_GESTURE_WAKEUP
 	input_dev->event = gt1x_select_gesture_mode;
 	input_set_capability(input_dev, EV_KEY, KEY_GES_REGULAR);
-    input_set_capability(input_dev, EV_KEY, KEY_GES_CUSTOM);
-
-    input_set_capability(input_dev, EV_KEY, KEY_WAKEUP);
-
+	input_set_capability(input_dev, EV_KEY, KEY_GES_CUSTOM);
+	//Begin xiaopei add gesture wakeup 2018-3-8
+	input_set_capability(input_dev, EV_KEY, KEY_WAKEUP);
+	//Begin xiaopei add gesture wakeup 2018-3-8
 #endif
 
 #if GTP_CHANGE_X2Y
@@ -826,7 +826,7 @@ static int gt1x_ts_probe(struct i2c_client *client, const struct i2c_device_id *
 #endif
 /*shenwenbin add for show TP info for *#87# 20180120 end*/
 
-
+	//do NOT remove these logs
 	GTP_INFO("GTP Driver Version: %s", GTP_DRIVER_VERSION);
 	GTP_INFO("GTP I2C Address: 0x%02x", client->addr);
 	gt1x_i2c_client = client;
@@ -847,41 +847,41 @@ static int gt1x_ts_probe(struct i2c_client *client, const struct i2c_device_id *
 	if (ret < 0)
 		GTP_ERROR("Init pinctrl states failed.");
 
+ //add by likang for pinctrl @20171130/
 
-
-    if (!ret && gt_pinctrl.ts_pinctrl) {
-        ret = pinctrl_select_state(gt_pinctrl.ts_pinctrl, gt_pinctrl.int_out_low);
-        if (ret < 0) {
-            dev_err(&client->dev,"failed to select pin to eint_output_low");
-        }
-        ret = pinctrl_select_state(gt_pinctrl.ts_pinctrl,gt_pinctrl.erst_output_low);
-        if (ret < 0) {
-            dev_err(&client->dev,"failed to select pin to erst_as_default");
-        }
-        msleep(10);
-    }
-    ret = gt1x_power_switch(1);
-    if (ret) {
-        GTP_ERROR("GTP power on failed.");
-        return -EINVAL;
-    }
-    msleep(50);
-
-
-
-
-
+	if (!ret && gt_pinctrl.ts_pinctrl) {
+		ret = pinctrl_select_state(gt_pinctrl.ts_pinctrl, gt_pinctrl.int_out_low);
+		if (ret < 0) {
+			dev_err(&client->dev,"failed to select pin to eint_output_low");
+		}
+		ret = pinctrl_select_state(gt_pinctrl.ts_pinctrl,gt_pinctrl.erst_output_low);
+		if (ret < 0) {
+			dev_err(&client->dev,"failed to select pin to erst_as_default");
+		}
+		msleep(10);
+	}
+	ret = gt1x_power_switch(1);
+	if (ret) {
+		GTP_ERROR("GTP power on failed.");
+		return -EINVAL;
+	}
+	msleep(50);
+	//end by likang
+   // #else			/* use gpio defined in gt9xx.h */
+	//gtp_rst_gpio = GTP_RST_PORT;
+	//gtp_int_gpio = GTP_INT_PORT;
+	//#endif
 
 	ret = gt1x_request_io_port();
 	if (ret < 0) {
 		GTP_ERROR("GTP request IO port failed.");
 		return ret;
 	}
-
+	//begin xiaopei add if init failed ,means no Goodix TP
 	ret = gt1x_init();
-    if (ret != 0)
-		  goto ERROR_INIT;
-
+	if(ret != 0)
+		  goto ERROR_INIT;//
+	//end add
 	INIT_WORK(&gt1x_work, gt1x_ts_work_func);
 
 	ret = gt1x_request_input_dev();
@@ -896,9 +896,9 @@ static int gt1x_ts_probe(struct i2c_client *client, const struct i2c_device_id *
 		GTP_INFO("GTP works in interrupt mode.");
 	}
 
-
-    get_lockdown_info(client,gt1x_tp_lockdown_info);
-
+	//begin songxihao 20170929 for add lockdown_info sys & fw_version sys
+	get_lockdown_info(client,gt1x_tp_lockdown_info);
+	//end songxihao 20170929
 
 
 #if GTP_GESTURE_WAKEUP
@@ -908,7 +908,7 @@ static int gt1x_ts_probe(struct i2c_client *client, const struct i2c_device_id *
 	gt1x_irq_enable();
 
 #if GTP_ESD_PROTECT
-
+	// must before auto update
 	gt1x_init_esd_protect();
 	gt1x_esd_switch(SWITCH_ON);
 #endif
@@ -936,41 +936,41 @@ static int gt1x_ts_probe(struct i2c_client *client, const struct i2c_device_id *
 #endif
 
 	gt1x_register_powermanger();
-
-    goodix_create_sysfs(client);
-
+  //begin songxihao 20170929 for add lockdown_info sys & fw_version sys
+	goodix_create_sysfs(client);
+ //end songxihao 20170929
 
  /*shenwenbin add for runin 20180120 begin*/
-
+//	i2c_devinfo_device_write("TP:1;");
  /*shenwenbin add for runin 20180120 end*/
   /* Begin xiaopei add gesture wakeup 2018-3-9 */
   tp_gesture_creat_sys_entry();
   /* End xiaopei add gesture wakeup 2018-3-9 */
 
-
+//lihongshuai@2018.10.30
 #if  GTP_ITO_TEST_SELF
 	gtp_test_sysfs_init();
 #endif
 
 INIT_WORK(&gt_resmue, gt1x_resume);
 INIT_WORK(&gt_suspend, gt1x_suspend);
-
+//lihongshuai@2018.10.30
 
 	return 0;
-
+//Begin xiaopei add
 ERROR_INIT:
-    gpio_free(GTP_RST_PORT);
+	gpio_free(GTP_RST_PORT);
 	gpio_free(GTP_INT_PORT);
 	devm_pinctrl_put(gt_pinctrl.ts_pinctrl);
 	regulator_disable(vdd_ana);
 	regulator_disable(vcc_i2c);
 /*shenwenbin add for runin 20180120 begin*/
-
+//	i2c_devinfo_device_write("TP:0;");
 /*shenwenbin add for runin 20180120 end*/
 
 	return ret;
-
-
+	//vdd_ana = NULL;
+ //end
 
 
 }
@@ -989,15 +989,15 @@ static int gt1x_ts_remove(struct i2c_client *client)
 #if GTP_GESTURE_WAKEUP
 	disable_irq_wake(client->irq);
 #endif
-    gt1x_deinit();
+	gt1x_deinit();
 	input_unregister_device(input_dev);
-    gt1x_remove_gpio_and_power();
+	gt1x_remove_gpio_and_power();
+	//begin songxihao 20170929 for add lockdown_info sys & fw_version sys
+		goodix_remove_sysfs(client);
+	//end songxihao 20170929
 
-        goodix_remove_sysfs(client);
 
-
-
-    return 0;
+	return 0;
 }
 
 #if   defined(CONFIG_FB)
@@ -1011,40 +1011,40 @@ static int gtp_fb_notifier_callback(struct notifier_block *noti, unsigned long e
 	int *blank;
 
 #if GTP_INCELL_PANEL
-    #ifndef FB_EARLY_EVENT_BLANK
-        #error Need add FB_EARLY_EVENT_BLANK to fbmem.c
-    #endif
+	#ifndef FB_EARLY_EVENT_BLANK
+		#error Need add FB_EARLY_EVENT_BLANK to fbmem.c
+	#endif
 
 	if (ev_data && ev_data->data && event == FB_EARLY_EVENT_BLANK) {
 		blank = ev_data->data;
 
-        if (*blank == FB_BLANK_UNBLANK) {
+		if (*blank == FB_BLANK_UNBLANK) {
 
 			GTP_DEBUG("Resume by fb notifier.");
 			gt1x_resume();
-        }
-    }
+		}
+	}
 #else
 	if (ev_data && ev_data->data && event == FB_EVENT_BLANK) {
 		blank = ev_data->data;
-        if (*blank == FB_BLANK_UNBLANK) {
+		if (*blank == FB_BLANK_UNBLANK) {
 			GTP_DEBUG("Resume by fb notifier.");
+			//gt1x_resume();
+			queue_work(gt1x_wq, &gt_resmue);//lihongshuai@20181108
 
-			queue_work(gt1x_wq, &gt_resmue);
-
-        }
-    }
+		}
+	}
 #endif
 
 	if (ev_data && ev_data->data && event == FB_EVENT_BLANK) {
 		blank = ev_data->data;
 
-        if (*blank == FB_BLANK_POWERDOWN) {
-
+		if (*blank == FB_BLANK_POWERDOWN) {
+			//GTP_DEBUG("Suspend by fb notifier.");
 			/* begin xiaopei modify goodix can not sleep ,when suspend 2018-3-2*/
-
+			//gt1x_suspend();
 			/* End xiaopei modify goodix can not sleep ,when suspend 2018-3-2*/
-			queue_work(gt1x_wq, &gt_suspend);
+			queue_work(gt1x_wq, &gt_suspend); //lihongshuai@20181108
 			GTP_DEBUG("Suspend by mdss_dsi.c");
 		}
 	}

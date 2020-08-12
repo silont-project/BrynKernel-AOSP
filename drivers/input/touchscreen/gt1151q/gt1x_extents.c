@@ -59,7 +59,7 @@ int gesture_enabled = 1;    /* module switch */
 DOZE_T gesture_doze_status = DOZE_DISABLED; /* doze status */
 
 static u8 gestures_flag[32]; /* gesture flag, every bit stands for a gesture */
-static u8 edge_config[8] = {0};
+static u8 edge_config[8] = {0}; //lihongshuai@20181130,add for egde inhibition
 
 static st_gesture_data gesture_data; /* gesture data buffer */
 static struct mutex gesture_data_mutex; /* lock for gesture data */
@@ -67,7 +67,7 @@ struct mutex edge_inhibition_mutex; /* lock for edge_inhibition */
 
 static u8 edge_inhibition_flag[4][8] = {"bottom","right","left","top"};
 
-static ssize_t gt1x_gesture_data_read(struct file *file, char __user *page, size_t size, loff_t *ppos)
+static ssize_t gt1x_gesture_data_read(struct file *file, char __user * page, size_t size, loff_t * ppos)
 {
 	s32 ret = -1;
 	GTP_DEBUG("visit gt1x_gesture_data_read. ppos:%d", (int)*ppos);
@@ -84,7 +84,7 @@ static ssize_t gt1x_gesture_data_read(struct file *file, char __user *page, size
 	return ret;
 }
 
-static ssize_t gt1x_gesture_data_write(struct file *filp, const char __user *buff, size_t len, loff_t *off)
+static ssize_t gt1x_gesture_data_write(struct file *filp, const char __user * buff, size_t len, loff_t * off)
 {
 	s32 ret = 0;
 
@@ -157,7 +157,7 @@ int gesture_enter_doze(void)
 	return -1;
 }
 
-s32 gesture_event_handler(struct input_dev *dev)
+s32 gesture_event_handler(struct input_dev * dev)
 {
 	u8 doze_buf[4] = { 0 }, ges_type;
 	static int err_flag1 = 0, err_flag2 = 0;
@@ -166,7 +166,7 @@ s32 gesture_event_handler(struct input_dev *dev)
 	s32 ret = 0;
 
 	if (DOZE_ENABLED != gesture_doze_status) {
-		return -EPERM;
+		return -1;
 	}
 
 	/** package: -head 4B + track points + extra info-
@@ -291,23 +291,23 @@ s32 gesture_event_handler(struct input_dev *dev)
 	}
 
 	mutex_lock(&gesture_data_mutex);
-	gesture_data.data[0] = ges_type;
-	gesture_data.data[1] = len;
-	gesture_data.data[2] = doze_buf[2] & 0x7F;
-	gesture_data.data[3] = extra_len;
+	gesture_data.data[0] = ges_type;	// gesture type
+	gesture_data.data[1] = len;	        // gesture points number
+	gesture_data.data[2] = doze_buf[2] & 0x7F; // protocol type
+	gesture_data.data[3] = extra_len;   // gesture date length
 	mutex_unlock(&gesture_data_mutex);
 
 	/* get key code */
 	key_code = ges_type < 16? KEY_GES_CUSTOM : KEY_GES_REGULAR;
 	GTP_DEBUG("Gesture: 0x%02X, points: %d", doze_buf[0], doze_buf[1]);
-
+	//Begin xiaopei add gesture wakeup 2018-3-9
 	input_report_key(dev, KEY_WAKEUP, 1);
 	input_sync(dev);
 	input_report_key(dev, KEY_WAKEUP, 0);
-	input_sync(dev);
-
+	input_sync(dev);	
+	//End xiaopei add gesture wakeup 2018-3-9
 clear_reg:
-	doze_buf[0] = 0;
+	doze_buf[0] = 0; // clear ges flag
 	gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
 	return ret;
 }
@@ -332,9 +332,9 @@ void gt1x_gesture_debug(int on)
 	GTP_DEBUG("Gesture debug %s", on ? "on":"off");
 }
 
-#endif
+#endif // GTP_GESTURE_WAKEUP
 
-
+//HotKnot module
 #if GTP_HOTKNOT
 #define HOTKNOT_NODE "hotknot"
 #define HOTKNOT_VERSION  "GOODIX,GT1X"
@@ -452,11 +452,11 @@ static s32 hotknot_recovery_main_system(void)
 
 #if HOTKNOT_BLOCK_RW
 DECLARE_WAIT_QUEUE_HEAD(bp_waiter);
-static u8 got_hotknot_state;
-static u8 got_hotknot_extra_state;
-static u8 wait_hotknot_state;
-static u8 force_wake_flag;
-static u8 block_enable;
+static u8 got_hotknot_state = 0;
+static u8 got_hotknot_extra_state = 0;
+static u8 wait_hotknot_state = 0;
+static u8 force_wake_flag = 0;
+static u8 block_enable = 0;
 s32 hotknot_paired_flag = 0;
 
 static s32 hotknot_block_rw(u8 rqst_hotknot_state, s32 wait_hotknot_timeout)
@@ -494,11 +494,11 @@ static void hotknot_wakeup_block(void)
 	wake_up_interruptible(&bp_waiter);
 }
 
-s32 hotknot_event_handler(u8 *data)
+s32 hotknot_event_handler(u8 * data)
 {
 	u8 hn_pxy_state = 0;
 	u8 hn_pxy_state_bak = 0;
-	static u8 hn_paired_cnt;
+	static u8 hn_paired_cnt = 0;
 	u8 hn_state_buf[10] = { 0 };
 	u8 finger = data[0];
 	u8 id = 0;
@@ -573,31 +573,31 @@ s32 hotknot_event_handler(u8 *data)
 		return 0;
 	}
 
-	return -EPERM;
+	return -1;
 }
-#endif
-#endif
+#endif //HOTKNOT_BLOCK_RW
+#endif //GTP_HOTKNOT
 
 #define GOODIX_MAGIC_NUMBER        'G'
 #define NEGLECT_SIZE_MASK           (~(_IOC_SIZEMASK << _IOC_SIZESHIFT))
 
-#define GESTURE_ENABLE              _IO(GOODIX_MAGIC_NUMBER, 1)
+#define GESTURE_ENABLE              _IO(GOODIX_MAGIC_NUMBER, 1)	// 1
 #define GESTURE_DISABLE             _IO(GOODIX_MAGIC_NUMBER, 2)
 #define GESTURE_FLAG_SET            _IO(GOODIX_MAGIC_NUMBER, 3)
 #define GESTURE_FLAG_CLEAR          _IO(GOODIX_MAGIC_NUMBER, 4)
-
+//#define SET_ENABLED_GESTURE         (_IOW(GOODIX_MAGIC_NUMBER, 5, u8) & NEGLECT_SIZE_MASK)
 #define GESTURE_DATA_OBTAIN         (_IOR(GOODIX_MAGIC_NUMBER, 6, u8) & NEGLECT_SIZE_MASK)
 #define GESTURE_DATA_ERASE          _IO(GOODIX_MAGIC_NUMBER, 7)
 
-
+//#define HOTKNOT_LOAD_SUBSYSTEM      (_IOW(GOODIX_MAGIC_NUMBER, 6, u8) & NEGLECT_SIZE_MASK)
 #define HOTKNOT_LOAD_HOTKNOT        _IO(GOODIX_MAGIC_NUMBER, 20)
 #define HOTKNOT_LOAD_AUTHENTICATION _IO(GOODIX_MAGIC_NUMBER, 21)
 #define HOTKNOT_RECOVERY_MAIN       _IO(GOODIX_MAGIC_NUMBER, 22)
-
+//#define HOTKNOT_BLOCK_RW            (_IOW(GOODIX_MAGIC_NUMBER, 6, u8) & NEGLECT_SIZE_MASK)
 #define HOTKNOT_DEVICES_PAIRED      _IO(GOODIX_MAGIC_NUMBER, 23)
 #define HOTKNOT_MASTER_SEND         _IO(GOODIX_MAGIC_NUMBER, 24)
 #define HOTKNOT_SLAVE_RECEIVE       _IO(GOODIX_MAGIC_NUMBER, 25)
-
+//#define HOTKNOT_DEVICES_COMMUNICATION
 #define HOTKNOT_MASTER_DEPARTED     _IO(GOODIX_MAGIC_NUMBER, 26)
 #define HOTKNOT_SLAVE_DEPARTED      _IO(GOODIX_MAGIC_NUMBER, 27)
 #define HOTKNOT_VENDOR_VERSION      (_IOR(GOODIX_MAGIC_NUMBER, 28, u8) & NEGLECT_SIZE_MASK)
@@ -613,7 +613,7 @@ s32 hotknot_event_handler(u8 *data)
 #define IO_VERSION                   "V1.3-20150420"
 
 #define CMD_HEAD_LENGTH             20
-static s32 io_iic_read(u8 *data, void __user *arg)
+static s32 io_iic_read(u8 * data, void __user * arg)
 {
 	s32 err = ERROR;
 	s32 data_length = 0;
@@ -637,13 +637,13 @@ static s32 io_iic_read(u8 *data, void __user *arg)
 		}
 		err = CMD_HEAD_LENGTH + data_length;
 	}
-
-
+	//GTP_DEBUG("IIC_READ.addr:0x%4x, length:%d, ret:%d", addr, data_length, err);
+	//GTP_DEBUG_ARRAY((&data[CMD_HEAD_LENGTH]), data_length);
 
 	return err;
 }
 
-static s32 io_iic_write(u8 *data)
+static s32 io_iic_write(u8 * data)
 {
 	s32 err = ERROR;
 	s32 data_length = 0;
@@ -657,18 +657,18 @@ static s32 io_iic_write(u8 *data)
 		err = CMD_HEAD_LENGTH + data_length;
 	}
 
-
-
+	//GTP_DEBUG("IIC_WRITE.addr:0x%4x, length:%d, ret:%d", addr, data_length, err);
+	//GTP_DEBUG_ARRAY((&data[CMD_HEAD_LENGTH]), data_length);
 	return err;
 }
 
-
-
-
+//@return, 0:operate successfully
+//         > 0: the length of memory size ioctl has accessed,
+//         error otherwise.
 static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	u32 value = 0;
-	s32 ret = 0;
+	s32 ret = 0;		//the initial value must be 0
 	u8 *data = NULL;
 	int cnt = 30;
 
@@ -677,7 +677,7 @@ static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		ssleep(1);
 	}
 
-
+	//GTP_DEBUG("IOCTL CMD:%x", cmd);
 	/* GTP_DEBUG("command:%d, length:%d, rw:%s",
 	        _IOC_NR(cmd),
 	        _IOC_SIZE(cmd),
@@ -695,7 +695,7 @@ static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			if (err) {
 				GTP_ERROR("Can't access the memory.");
 				kfree(data);
-				return -EPERM;
+				return -1;
 			}
 		}
 	} else {
@@ -740,7 +740,7 @@ static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 #endif
 		break;
 
-
+		//print a string to syc log messages between application and kernel.
 	case IO_PRINT:
 		if (data)
 			GTP_INFO("%s", (char *)data);
@@ -784,7 +784,7 @@ static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		GTP_DEBUG("ERASE_GESTURE_DATA");
 		gesture_clear_wakeup_data();
 		break;
-#endif
+#endif // GTP_GESTURE_WAKEUP
 
 #if GTP_HOTKNOT
 	case HOTKNOT_VENDOR_VERSION:
@@ -838,8 +838,8 @@ static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case HOTKNOT_WAKEUP_BLOCK:
 		hotknot_wakeup_block();
 		break;
-#endif
-#endif
+#endif //HOTKNOT_BLOCK_RW
+#endif //GTP_HOTKNOT
 
 	default:
 		GTP_INFO("Unknown cmd.");
@@ -906,7 +906,7 @@ s32 gt1x_init_node(void)
 	proc_entry = proc_create(GESTURE_NODE, 0666, NULL, &gt1x_fops);
 	if (proc_entry == NULL) {
 		GTP_ERROR("CAN't create proc entry /proc/%s.", GESTURE_NODE);
-		return -EPERM;
+		return -1;
 	} else {
 		GTP_INFO("Created proc entry /proc/%s.", GESTURE_NODE);
 	}
@@ -915,7 +915,7 @@ s32 gt1x_init_node(void)
 #if GTP_HOTKNOT
 	if (misc_register(&hotknot_misc_device)) {
 		GTP_ERROR("CAN't create misc device in /dev/hotknot.");
-		return -EPERM;
+		return -1;
 	} else {
 		GTP_INFO("Created misc device in /dev/hotknot.");
 	}
@@ -935,37 +935,37 @@ void gt1x_deinit_node(void)
 }
 /* lihongshuai@20181130 */
 
-static int edge_inhibition_open(struct inode *inode, struct file *file)
+static int edge_inhibition_open(struct inode* inode, struct file* file)
 {
 	s32 ret = 0;
 	return ret;
 }
 
-static ssize_t edge_inhibition_read(struct file *file, char __user *buff, size_t size, loff_t *ppos)
+static ssize_t edge_inhibition_read(struct file *file, char __user * buff, size_t size, loff_t * ppos)
 {
 	s32 ret = -1;
 	u32 len = 0;
-
-	if (*ppos) {
+	
+	if(*ppos) {
 		GTP_INFO("[PARAM]size: %zd, *ppos: %d", size, (int)*ppos);
 		*ppos = 0;
 		return 0;
 	}
 
 	len = strlen(edge_config);
-
+	
 	ret = copy_to_user(buff, edge_config, len);
 	*ppos += len;
-
+	
 	return len;
 }
 
-static ssize_t edge_inhibition_write(struct file *filp, const char __user *buff, size_t len, loff_t *off)
+static ssize_t edge_inhibition_write(struct file *filp, const char __user * buff, size_t len, loff_t * off)
 {
 	s32 ret = 0;
 	u32 data = 0;
 	int i = 0;
-	u8 *mesg = NULL;
+	u8 * mesg = NULL;
 	int length = 0;
 
 	GTP_DEBUG_FUNC();
@@ -982,29 +982,29 @@ static ssize_t edge_inhibition_write(struct file *filp, const char __user *buff,
 		return -EPERM;
 	}
 
-	if (edge_config[0]<'0' || edge_config[0]>'9'){
+	if(edge_config[0]<'0' || edge_config[0]>'9'){
 		GTP_ERROR("input error num.");
 	}
 
 	data = simple_strtol(edge_config, NULL, 10);
-
+	
 	data &= 0x0f;
-
+	
 	mutex_lock(&edge_inhibition_mutex);
 	msleep(20);
 	gt1x_send_cmd(EGDE_INHIBITION_ADDR,(u8)data);
 	mutex_unlock(&edge_inhibition_mutex);
 
 	mesg = (char*)kmalloc(100,GFP_KERNEL);
-	if (NULL == mesg)
+	if(NULL == mesg)
 	{
 		printk("edge_inhibition_write malloc error");
-		return -EPERM;
+		return -1;
 	}
 	length = sprintf(mesg," %s ","Suppressed");
-	for (i = 0; i < 4; i++)
+	for(i = 0; i < 4; i++)
 	{
-		if (data & (0x01<<i))
+		if(data & (0x01<<i))
 		{
 			length += sprintf(mesg+length,"%s ",edge_inhibition_flag[i]);
 		}
@@ -1012,7 +1012,7 @@ static ssize_t edge_inhibition_write(struct file *filp, const char __user *buff,
 	length += sprintf(mesg+length,"%s","edges");
 	printk("%s\n",mesg);
 	kfree(mesg);
-
+	
 	GTP_DEBUG("edge_config:%s, data:%d, ret:%d", edge_config, data, ret);
 
 	return len;
@@ -1035,7 +1035,7 @@ s32 edge_inhibition_init(void)
 	proc_entry = proc_create(EDGE_INHIBITION_PROC, 0777, NULL, &edge_inhibition_fops);
 	if (proc_entry == NULL) {
 		GTP_ERROR("CAN't create proc entry /proc/%s.", EDGE_INHIBITION_PROC);
-		return -EPERM;
+		return -1;
 	} else {
 		GTP_INFO("Created proc entry /proc/%s.", EDGE_INHIBITION_PROC);
 	}
@@ -1043,6 +1043,3 @@ s32 edge_inhibition_init(void)
 	return 0;
 }
 /* lihongshuai@20181130 */
-
-
-

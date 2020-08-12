@@ -3,7 +3,7 @@
  * FocalTech TouchScreen driver.
  *
  * Copyright (c) 2012-2018, FocalTech Systems, Ltd., all rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -943,8 +943,8 @@ static int fts_irq_registration(struct fts_ts_data *ts_data)
 		pdata->irq_gpio_flags = IRQF_TRIGGER_FALLING;
 	FTS_INFO("irq flag:%x", pdata->irq_gpio_flags);
 	ret = request_threaded_irq(ts_data->irq, NULL, fts_ts_interrupt,
-					           pdata->irq_gpio_flags | IRQF_ONESHOT,
-					           ts_data->client->name, ts_data);
+						       pdata->irq_gpio_flags | IRQF_ONESHOT,
+						       ts_data->client->name, ts_data);
 
 	return ret;
 }
@@ -1113,7 +1113,7 @@ err_irq_gpio_req:
 *  Return: return 0 if succuss, otherwise return error code
 *****************************************************************************/
 static int fts_get_dt_coords(struct device *dev, char *name,
-					         struct fts_ts_platform_data *pdata)
+						     struct fts_ts_platform_data *pdata)
 {
 	int ret = 0;
 	u32 coords[FTS_COORDS_ARR_SIZE] = { 0 };
@@ -1181,7 +1181,7 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
 			FTS_ERROR("Key number undefined!");
 
 		ret = of_property_read_u32_array(np, "focaltech,keys",
-					                     pdata->keys, pdata->key_number);
+						                 pdata->keys, pdata->key_number);
 		if (ret)
 			FTS_ERROR("Keys undefined!");
 		else if (pdata->key_number > FTS_MAX_KEYS)
@@ -1192,7 +1192,7 @@ static int fts_parse_dt(struct device *dev, struct fts_ts_platform_data *pdata)
 			FTS_ERROR("Key Y Coord undefined!");
 
 		ret = of_property_read_u32_array(np, "focaltech,key-x-coords",
-					                     pdata->key_x_coords, pdata->key_number);
+						                 pdata->key_x_coords, pdata->key_number);
 		if (ret)
 			FTS_ERROR("Key X Coords undefined!");
 
@@ -1258,7 +1258,7 @@ static void tp_fb_notifier_suspend_work(struct work_struct *work)
 *  Return:
 *****************************************************************************/
 static int fb_notifier_callback(struct notifier_block *self,
-					            unsigned long event, void *data)
+						        unsigned long event, void *data)
 {
 	struct fb_event *evdata = data;
 	int *blank;
@@ -1295,8 +1295,8 @@ static int fb_notifier_callback(struct notifier_block *self,
 static void fts_ts_early_suspend(struct early_suspend *handler)
 {
 	struct fts_ts_data *data = container_of(handler,
-					                        struct fts_ts_data,
-					                        early_suspend);
+						                    struct fts_ts_data,
+						                    early_suspend);
 
 	fts_ts_suspend(&data->client->dev);
 }
@@ -1311,8 +1311,8 @@ static void fts_ts_early_suspend(struct early_suspend *handler)
 static void fts_ts_late_resume(struct early_suspend *handler)
 {
 	struct fts_ts_data *data = container_of(handler,
-					                        struct fts_ts_data,
-					                        early_suspend);
+						                    struct fts_ts_data,
+						                    early_suspend);
 
 	fts_ts_resume(&data->client->dev);
 }

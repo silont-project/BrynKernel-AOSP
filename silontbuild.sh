@@ -5,7 +5,7 @@
 # Android Kernel Build Script
 
 # Add Depedency
-apt-get -y install bc build-essential zip curl libstdc++6 git default-jre default-jdk wget python-is-python3 gcc clang libssl-dev rsync flex bison
+apt-get -y install bc build-essential zip curl libstdc++6 git default-jre default-jdk wget nano python-is-python3 gcc clang libssl-dev rsync flex bison && pip3 install telegram-send
 
 # Main environtment
 KERNEL_DIR=$PWD
@@ -52,12 +52,12 @@ for MODULES in $(find "${OUTDIR}" -name '*.ko'); do
             "${MODULES}"
     find "${OUTDIR}" -name '*.ko' -exec cp {} "${VENDOR_MODULEDIR}" \;
     case ${MODULES} in
-            */pronto_wlan.ko)
-        cp "${MODULES}" "${VENDOR_MODULEDIR}/pronto_wlan.ko" ;;
+            */wlan.ko)
+        cp "${MODULES}" "${VENDOR_MODULEDIR}/wlan.ko" ;;
     esac
 done
 echo -e "\n(i) Done moving modules"
-rm "${VENDOR_MODULEDIR}/pronto_wlan.ko"
+rm "${VENDOR_MODULEDIR}/wlan.ko"
 
 cd $ZIP_DIR
 cp $KERN_IMG zImage

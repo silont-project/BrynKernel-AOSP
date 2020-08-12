@@ -3,7 +3,7 @@
  * FocalTech TouchScreen driver.
  *
  * Copyright (c) 2012-2018, FocalTech Systems, Ltd., all rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -304,7 +304,7 @@ static void esdcheck_func(struct work_struct *work)
 {
 	u8 val = 0;
 	struct fts_ts_data *ts_data = container_of(work,
-					              struct fts_ts_data, esdcheck_work.work);
+				                  struct fts_ts_data, esdcheck_work.work);
 
 	FTS_FUNC_ENTER();
 	if (ENABLE == fts_esdcheck_data.mode) {
@@ -317,7 +317,7 @@ static void esdcheck_func(struct work_struct *work)
 		}
 		esdcheck_algorithm(ts_data);
 		queue_delayed_work(ts_data->ts_workqueue, &ts_data->esdcheck_work,
-					       msecs_to_jiffies(ESDCHECK_WAIT_TIME));
+				           msecs_to_jiffies(ESDCHECK_WAIT_TIME));
 	}
 	FTS_FUNC_EXIT();
 }
@@ -381,7 +381,7 @@ int fts_esdcheck_switch(bool enable)
 			fts_esdcheck_data.flow_work_hold_cnt = 0;
 			fts_esdcheck_data.flow_work_cnt_last = 0;
 			queue_delayed_work(ts_data->ts_workqueue, &ts_data->esdcheck_work,
-					           msecs_to_jiffies(ESDCHECK_WAIT_TIME));
+				               msecs_to_jiffies(ESDCHECK_WAIT_TIME));
 		} else {
 			FTS_DEBUG("[ESD]: ESD check stop!!");
 			cancel_delayed_work(&ts_data->esdcheck_work);

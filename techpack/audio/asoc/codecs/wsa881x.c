@@ -389,7 +389,7 @@ static ssize_t wsa881x_swrslave_reg_show(char __user *ubuf, size_t count,
 			continue;
 		swr_read(dbgwsa881x->swr_slave, devnum,
 			i, &reg_val, 1);
-		len = snprintf(tmp_buf, 25, "0x%.3x: 0x%.2x\n", i,
+			len = snprintf(tmp_buf, sizeof(tmp_buf), "0x%.3x: 0x%.2x\n", i,
 			       (reg_val & 0xFF));
 		if ((total + len) >= count - 1)
 			break;
@@ -917,7 +917,7 @@ static void wsa881x_ocp_ctl_work(struct work_struct *work)
 	else
 		snd_soc_update_bits(codec, WSA881X_SPKR_OCP_CTL, 0xC0, 0xC0);
 
-	schedule_delayed_work(&wsa881x->ocp_ctl_work,
+		schedule_delayed_work(&wsa881x->ocp_ctl_work,
 			msecs_to_jiffies(wsa881x_ocp_poll_timer_sec * 1000));
 }
 

@@ -13503,7 +13503,7 @@ void wlan_hdd_defer_scan_init_work(hdd_context_t *pHddCtx,
         pHddCtx->scan_ctxt.attempt = 0;
         pHddCtx->scan_ctxt.magic = TDLS_CTX_MAGIC;
     }
-    schedule_delayed_work(&pHddCtx->scan_ctxt.scan_work, delay);
+	schedule_delayed_work(&pHddCtx->scan_ctxt.scan_work, delay);
 }
 
 void wlan_hdd_init_deinit_defer_scan_context(scan_context_t *scan_ctx)

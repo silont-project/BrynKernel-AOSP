@@ -51,57 +51,57 @@
 #endif
 /***************************PART1:ON/OFF define*******************************/
 #define GTP_INCELL_PANEL      0
-#define GTP_DRIVER_SEND_CFG   1
-#define GTP_CUSTOM_CFG        1
+#define GTP_DRIVER_SEND_CFG   1	// send config to TP while initializing (for no config built in TP's flash)
+#define GTP_CUSTOM_CFG        1	// customize resolution & interrupt trigger mode
 
-#define GTP_CHANGE_X2Y        0
+#define GTP_CHANGE_X2Y        0	// exchange xy
 #define GTP_WARP_X_ON         0
 #define GTP_WARP_Y_ON         0
 
-#define GTP_GESTURE_WAKEUP    1
+#define GTP_GESTURE_WAKEUP    1	// xiaopei turn-on gesture wakeup module
 /* buffer used to store ges track points coor. */
-
-#define GES_BUFFER_ADDR       0xBE0C
-
-
-
+//#define GES_BUFFER_ADDR       0xA2A0    // GT1151
+#define GES_BUFFER_ADDR       0xBE0C    // GT1151q
+//#define GES_BUFFER_ADDR       0x8A40    // GT9L
+//#define GES_BUFFER_ADDR       0x9734     // GT1152
+//#define GES_BUFFER_ADDR       0xBDA8    // GT9286
 #define EGDE_INHIBITION_ADDR 0x43
 
 #ifndef GES_BUFFER_ADDR
 #warning  [GOODIX] need define GES_BUFFER_ADDR .
 #endif
-#define KEY_GES_REGULAR       KEY_F2
-#define KEY_GES_CUSTOM        KEY_F3
+#define KEY_GES_REGULAR       KEY_F2	// regular gesture-key
+#define KEY_GES_CUSTOM        KEY_F3    //customize gesture-key
 
-#define GTP_HOTKNOT           0
-#define HOTKNOT_TYPE          0
-#define HOTKNOT_BLOCK_RW      0
+#define GTP_HOTKNOT           0	// hotknot module
+#define HOTKNOT_TYPE          0	// 0: hotknot in flash; 1: hotknot in driver
+#define HOTKNOT_BLOCK_RW      0 //
 
-#define GTP_AUTO_UPDATE       1
-#define GTP_HEADER_FW_UPDATE  1
-#define GTP_FW_UPDATE_VERIFY  1
+#define GTP_AUTO_UPDATE       1	// auto update FW to TP FLASH while initializing
+#define GTP_HEADER_FW_UPDATE  1	// firmware in gt1x_firmware.h
+#define GTP_FW_UPDATE_VERIFY  1 // verify fw when updating
 
-#define GTP_REQUEST_FW_UPDATE 0
+#define GTP_REQUEST_FW_UPDATE 0 //firmware for request
 
-#define GTP_HAVE_TOUCH_KEY    0
-#define GTP_WITH_STYLUS       0
-#define GTP_HAVE_STYLUS_KEY   0
+#define GTP_HAVE_TOUCH_KEY    0 // touch key support
+#define GTP_WITH_STYLUS       0 // pen support
+#define GTP_HAVE_STYLUS_KEY   0 //
 
-#define GTP_POWER_CTRL_SLEEP  0
+#define GTP_POWER_CTRL_SLEEP  0	// turn off power on suspend
 #define GTP_ICS_SLOT_REPORT   1
-#define GTP_CREATE_WR_NODE    1
+#define GTP_CREATE_WR_NODE    1	// create the interface to support gtp_tools
 
-#define GTP_PROXIMITY         0
-#define GTP_SMART_COVER       0
+#define GTP_PROXIMITY         0	// proximity module (function as the p-sensor)
+#define GTP_SMART_COVER       0 // smart cover module
 
-#define GTP_ESD_PROTECT       1
-#define GTP_CHARGER_SWITCH    0
+#define GTP_ESD_PROTECT       1	// esd-protection module (with a cycle of 2 seconds)
+#define GTP_CHARGER_SWITCH    0	// charger plugin & plugout detect
 
-#define GTP_DEBUG_ON          0
+#define GTP_DEBUG_ON          0	// enable log printed by GTP_DEBUG(...)
 #define GTP_DEBUG_ARRAY_ON    0
 #define GTP_DEBUG_FUNC_ON     0
 #define SUPPORT_READ_TP_VERSION
-#define EDGE_INHIBITION
+#define EDGE_INHIBITION //lihongshuai@20181130
 #define EDGE_INHIBITION_PROC  "edge_control"
 
 /***************************PART2:TODO define**********************************/
@@ -211,7 +211,7 @@
 #if GTP_CUSTOM_CFG
 #define GTP_MAX_HEIGHT   1520
 #define GTP_MAX_WIDTH    720
-#define GTP_INT_TRIGGER  0
+#define GTP_INT_TRIGGER  0	//0:Rising 1:Falling
 #define GTP_WAKEUP_LEVEL 1
 #else
 #define GTP_MAX_HEIGHT   2160
@@ -255,7 +255,7 @@
 #define GTP_REG_COLOR_GT1151Q			0x99A4
 
 #define GTP_REG_WAKEUP_GESTURE         0x814C
-#define GTP_REG_WAKEUP_GESTURE_DETAIL  0xBE0C
+#define GTP_REG_WAKEUP_GESTURE_DETAIL  0xBE0C	// need change
 #define GTP_REG_LOCKDOWN               0x99A4
 
 #define GTP_BAK_REF_PATH                "/data/gt1x_ref.bin"
@@ -317,36 +317,36 @@
 #define GTP_I2C_ADDRESS       		0x28
 
 #if GTP_WARP_X_ON
-#define GTP_WARP_X(x_max, x) ( x_max - 1 - x)
+#define GTP_WARP_X(x_max, x) ( x_max - 1 - x )
 #else
 #define GTP_WARP_X(x_max, x) x
 #endif
 
 #if GTP_WARP_Y_ON
-#define GTP_WARP_Y(y_max, y) ( y_max - 1 - y)
+#define GTP_WARP_Y(y_max, y) ( y_max - 1 - y )
 #else
 #define GTP_WARP_Y(y_max, y) y
 #endif
 
 #define IS_NUM_OR_CHAR(x)    (((x) >= 'A' && (x) <= 'Z') || ((x) >= '0' && (x) <= '9'))
 
-
+//Log define
 #define GTP_INFO(fmt,arg...)           printk("<<GTP-INF>>[%s:%d] "fmt"\n", __func__, __LINE__, ##arg)
 #define GTP_ERROR(fmt,arg...)          printk("<<GTP-ERR>>[%s:%d] "fmt"\n", __func__, __LINE__, ##arg)
 #define GTP_DEBUG(fmt,arg...)          do{\
-                                         if (GTP_DEBUG_ON)\
+                                         if(GTP_DEBUG_ON)\
                                          printk("<<GTP-DBG>>[%s:%d]"fmt"\n",__func__, __LINE__, ##arg);\
                                        }while(0)
 #define GTP_DEBUG_ARRAY(array, num)    do{\
                                          s32 i;\
-                                         u8 *a = array;\
-                                         if (GTP_DEBUG_ARRAY_ON)\
+                                         u8* a = array;\
+                                         if(GTP_DEBUG_ARRAY_ON)\
                                          {\
                                             printk("<<GTP-DBG>>");\
                                             for (i = 0; i < (num); i++)\
                                             {\
                                                 printk("%02x ", (a)[i]);\
-                                                if ((i + 1) %10 == 0)\
+                                                if ((i + 1 ) %10 == 0)\
                                                 {\
                                                     printk("\n<<GTP-DBG>>");\
                                                 }\
@@ -355,7 +355,7 @@
                                         }\
                                        }while(0)
 #define GTP_DEBUG_FUNC()               do{\
-                                         if (GTP_DEBUG_FUNC_ON)\
+                                         if(GTP_DEBUG_FUNC_ON)\
                                          printk("<<GTP-FUNC>> Func:%s@Line:%d\n",__func__,__LINE__);\
                                        }while(0)
 
@@ -388,19 +388,19 @@ typedef enum {
 } CHIP_TYPE_T;
 
 #define _ERROR(e)      ((0x01 << e) | (0x01 << (sizeof(s32) * 8 - 1)))
-#define ERROR          _ERROR(1)
+#define ERROR          _ERROR(1)	//for common use
+//system relevant
+#define ERROR_IIC      _ERROR(2)	//IIC communication error.
+#define ERROR_MEM      _ERROR(3)	//memory error.
 
-#define ERROR_IIC      _ERROR(2)
-#define ERROR_MEM      _ERROR(3)
-
-
-#define ERROR_HN_VER   _ERROR(10)
-#define ERROR_CHECK    _ERROR(11)
-#define ERROR_RETRY    _ERROR(12)
-#define ERROR_PATH     _ERROR(13)
+//system irrelevant
+#define ERROR_HN_VER   _ERROR(10)	//HotKnot version error.
+#define ERROR_CHECK    _ERROR(11)	//Compare src and dst error.
+#define ERROR_RETRY    _ERROR(12)	//Too many retries.
+#define ERROR_PATH     _ERROR(13)	//Mount path error
 #define ERROR_FW       _ERROR(14)
 #define ERROR_FILE     _ERROR(15)
-#define ERROR_VALUE    _ERROR(16)
+#define ERROR_VALUE    _ERROR(16)	//Illegal value of variables
 
 /* bit operation */
 #define SET_BIT(data, flag)	((data) |= (flag))
@@ -428,9 +428,9 @@ extern u8 hotknot_auth_fw[];
 extern u8 hotknot_transfer_fw[];
 #if HOTKNOT_BLOCK_RW
 extern s32 hotknot_paired_flag;
-extern s32 hotknot_event_handler(u8 *data);
+extern s32 hotknot_event_handler(u8 * data);
 #endif
-#endif
+#endif //GTP_HOTKNOT
 
 extern s32 gt1x_init_node(void);
 extern void gt1x_deinit_node(void);
@@ -452,9 +452,9 @@ struct goodix_pinctrl {
 	struct pinctrl_state *int_out_low;
 	struct pinctrl_state *int_input;
 	struct pinctrl_state *erst_as_default;
-        struct pinctrl_state *erst_output_low;
-        struct pinctrl_state *erst_output_high;
-
+	struct pinctrl_state *erst_output_low;
+	struct pinctrl_state *erst_output_high;
+	
 };
 
 
@@ -465,24 +465,24 @@ extern void gt1x_touch_up(s32 id);
 extern int gt1x_power_switch(s32 state);
 extern void gt1x_irq_enable(void);
 extern void gt1x_irq_disable(void);
-extern int gt1x_debug_proc(u8 *buf, int count);
+extern int gt1x_debug_proc(u8 * buf, int count);
 
 struct fw_update_info {
 	int update_type;
 	int status;
 	int progress;
 	int max_progress;
-    int force_update;
+	int force_update;
 	struct fw_info *firmware;
 	u32 fw_length;
     const struct firmware *fw;
-
+	// file update
 	char *fw_name;
 	u8 *buffer;
 	mm_segment_t old_fs;
 	struct file *fw_file;
 
-
+	// header update
 	u8 *fw_data;
 };
 
@@ -496,7 +496,7 @@ extern int gt1x_update_firmware(void *filename);
 extern void gt1x_enter_update_mode(void);
 extern void gt1x_leave_update_mode(void);
 extern int gt1x_hold_ss51_dsp_no_reset(void);
-extern int gt1x_load_patch(u8 *patch, u32 patch_size, int offset, int bank_size);
+extern int gt1x_load_patch(u8 * patch, u32 patch_size, int offset, int bank_size);
 extern int gt1x_startup_patch(void);
 
 /* Export from gt1x_tool.c */
@@ -511,11 +511,11 @@ extern struct i2c_client *gt1x_i2c_client;
 extern CHIP_TYPE_T gt1x_chip_type;
 extern struct gt1x_version_info gt1x_version;
 
-extern s32 _do_i2c_read(struct i2c_msg *msgs, u16 addr, u8 *buffer, s32 len);
-extern s32 _do_i2c_write(struct i2c_msg *msg, u16 addr, u8 *buffer, s32 len);
-extern s32 gt1x_i2c_write(u16 addr, u8 *buffer, s32 len);
-extern s32 gt1x_i2c_read(u16 addr, u8 *buffer, s32 len);
-extern s32 gt1x_i2c_read_dbl_check(u16 addr, u8 *buffer, s32 len);
+extern s32 _do_i2c_read(struct i2c_msg *msgs, u16 addr, u8 * buffer, s32 len);
+extern s32 _do_i2c_write(struct i2c_msg *msg, u16 addr, u8 * buffer, s32 len);
+extern s32 gt1x_i2c_write(u16 addr, u8 * buffer, s32 len);
+extern s32 gt1x_i2c_read(u16 addr, u8 * buffer, s32 len);
+extern s32 gt1x_i2c_read_dbl_check(u16 addr, u8 * buffer, s32 len);
 
 extern u8 gt1x_config[];
 extern u32 gt1x_cfg_length;
@@ -534,12 +534,12 @@ extern s32 gt1x_init_panel(void);
 extern s32 gt1x_get_chip_type(void);
 extern s32 gt1x_request_event_handler(void);
 extern int gt1x_send_cmd(u8 cmd, u8 data);
-extern s32 gt1x_send_cfg(u8 *config, int cfg_len);
+extern s32 gt1x_send_cfg(u8 * config, int cfg_len);
 extern void gt1x_select_addr(void);
 extern s32 gt1x_reset_guitar(void);
 extern void gt1x_power_reset(void);
-extern int gt1x_parse_config(char *filename, u8 *gt1x_config);
-extern s32 gt1x_touch_event_handler(u8 *data, struct input_dev *dev, struct input_dev *pen_dev);
+extern int gt1x_parse_config(char *filename, u8 * gt1x_config);
+extern s32 gt1x_touch_event_handler(u8 * data, struct input_dev *dev, struct input_dev *pen_dev);
 extern void gt1x_suspend(struct work_struct *work);
 extern void gt1x_resume(struct work_struct *work);
 
@@ -555,7 +555,7 @@ extern void gt1x_pen_down(s32 x, s32 y, s32 size, s32 id);
 
 #if GTP_PROXIMITY
 extern u8 gt1x_proximity_flag;
-extern int gt1x_prox_event_handler(u8 *data);
+extern int gt1x_prox_event_handler(u8 * data);
 #endif
 
 #if GTP_SMART_COVER
@@ -579,5 +579,5 @@ extern s32 edge_inhibition_init(void);
 #endif
 
 
-#endif
+#endif // _GT1X_GENERIC_H_
 

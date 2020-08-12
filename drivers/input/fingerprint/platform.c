@@ -32,7 +32,7 @@ int gf_parse_dts(struct gf_dev *gf_dev)
 		return gf_dev->reset_gpio;
 	}
 	pr_info("hml success get reset goodix, %d\n", __LINE__);
-
+	
     rc = devm_gpio_request(dev, gf_dev->reset_gpio, "goodix_reset");
 	if (rc) {
 		pr_err("failed to request reset gpio, rc = %d\n", rc);
@@ -53,22 +53,22 @@ int gf_parse_dts(struct gf_dev *gf_dev)
 		goto err_irq;
 	}
 	gpio_direction_input(gf_dev->irq_gpio);
-
+	
 	gf_dev->pwr_gpio = of_get_named_gpio(np, "goodix,gpio_pwr", 0);
 	if (gf_dev->pwr_gpio < 0) {
 		pr_err("hml falied to get pwr gpio!\n");
 		return gf_dev->pwr_gpio;
 	}
 	pr_info("hml success get pwr goodix, %d\n", __LINE__);
-
+	
     rc = devm_gpio_request(dev, gf_dev->pwr_gpio, "goodix_power");
 	if (rc) {
 		pr_err("failed to request power gpio, rc = %d\n", rc);
 		goto err_power;
 	}
 	/*gpio_direction_output(gf_dev->pwr_gpio, 1);*/
-
-pr_info("gf_parse_dts gpio reset = %d,irq= %d,pwr= %d\n", gf_dev->reset_gpio,gf_dev->irq_gpio,gf_dev->pwr_gpio);
+	
+pr_info("gf_parse_dts gpio reset = %d,irq= %d,pwr= %d\n", gf_dev->reset_gpio,gf_dev->irq_gpio,gf_dev->pwr_gpio );
 
 err_power:
 	devm_gpio_free(dev, gf_dev->irq_gpio);
@@ -96,13 +96,13 @@ void gf_cleanup(struct gf_dev	* gf_dev)
 	}
 }
 
-int gf_power_on(struct gf_dev *gf_dev)
+int gf_power_on(struct gf_dev* gf_dev)
 {
 	int rc = 0;
 	pr_info("gf_power_on enter.\n");
-	if (gf_dev == NULL) {
+	if(gf_dev == NULL) {
 		pr_info("hml Input buff is NULL.\n");
-		return -EPERM;
+		return -1;
 	}
 	gpio_direction_output(gf_dev->pwr_gpio, 1);
 	msleep(10);
@@ -115,9 +115,9 @@ int gf_power_off(struct gf_dev* gf_dev)
 {
 	int rc = 0;
 	pr_info("gf_power_off enter.\n");
-	if (gf_dev == NULL) {
+	if(gf_dev == NULL) {
 		pr_info("hml Input buff is NULL.\n");
-		return -EPERM;
+		return -1;
 	}
 	gpio_direction_output(gf_dev->pwr_gpio, 0);
 	pr_info("gf_power_off exit.\n");
@@ -127,9 +127,9 @@ int gf_power_off(struct gf_dev* gf_dev)
 int gf_hw_reset(struct gf_dev *gf_dev, unsigned int delay_ms)
 {
 	pr_info("---- hw reset hml ----\n");
-	if (gf_dev == NULL) {
+	if(gf_dev == NULL) {
 		pr_info("hml Input buff is NULL.\n");
-		return -EPERM;
+		return -1;
 	}
 	gpio_direction_output(gf_dev->reset_gpio, 1);
 	gpio_set_value(gf_dev->reset_gpio, 0);
@@ -142,9 +142,9 @@ int gf_hw_reset(struct gf_dev *gf_dev, unsigned int delay_ms)
 
 int gf_irq_num(struct gf_dev *gf_dev)
 {
-	if (gf_dev == NULL) {
+	if(gf_dev == NULL) {
 		pr_info("hml Input buff is NULL.\n");
-		return -EPERM;
+		return -1;
 	} else {
 		return gpio_to_irq(gf_dev->irq_gpio);
 	}

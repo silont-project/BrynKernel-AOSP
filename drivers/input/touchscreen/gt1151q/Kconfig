@@ -1,7 +1,7 @@
 #
 # Touchscreen driver configuration
 #
-config TOUCHSCREEN_GX
+config TOUCHSCREEN_GX 
 	bool "GOODIX GT1X Touchscreen"
 	default y
 	help
