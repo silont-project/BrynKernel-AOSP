@@ -12,9 +12,9 @@ KERNEL_DIR=$PWD
 KERN_IMG=$KERNEL_DIR/out/arch/arm64/boot/Image.gz-dtb
 ZIP_DIR=$KERNEL_DIR/AnyKernel3
 CONFIG=silont_defconfig
-CROSS_COMPILE="aarch64-linux-android-"
-CROSS_COMPILE_ARM32="arm-linux-androideabi-"
-PATH=:"${KERNEL_DIR}/silont-clang/bin:${PATH}:${KERNEL_DIR}/stock/bin:${PATH}:${KERNEL_DIR}/stock_32/bin:${PATH}"
+CROSS_COMPILE="aarch64-elf-"
+CROSS_COMPILE_ARM32="arm-eabi-"
+PATH=:"${KERNEL_DIR}/silont-clang/bin:${PATH}:${KERNEL_DIR}/gcc64/bin:${PATH}:${KERNEL_DIR}/gcc32/bin:${PATH}"
 
 # Export
 export ARCH=arm64
@@ -26,8 +26,8 @@ make O=out $CONFIG
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
                       CC=clang \
-CLANG_TRIPLE=aarch64-linux-gnu- \
-CROSS_COMPILE=aarch64-linux-android-
+CLANG_TRIPLE=aarch64-elf-gnu- \
+CROSS_COMPILE=aarch64-elf-
 
 if ! [ -a $KERN_IMG ]; then
     echo "Build error!"
@@ -42,7 +42,7 @@ cd ..
 # Credit Adek Maulana <adek@techdro.id>
 OUTDIR="$KERNEL_DIR/out/"
 VENDOR_MODULEDIR="$KERNEL_DIR/AnyKernel3/modules/vendor/lib/modules"
-STRIP="$KERNEL_DIR/stock/bin/$(echo "$(find "$KERNEL_DIR/stock/bin" -type f -name "aarch64-*-gcc")" | awk -F '/' '{print $NF}' |\
+STRIP="$KERNEL_DIR/gcc64/bin/$(echo "$(find "$KERNEL_DIR/gcc64/bin" -type f -name "aarch64-*-gcc")" | awk -F '/' '{print $NF}' |\
             sed -e 's/gcc/strip/')"
 for MODULES in $(find "${OUTDIR}" -name '*.ko'); do
     "${STRIP}" --strip-unneeded --strip-debug "${MODULES}"
