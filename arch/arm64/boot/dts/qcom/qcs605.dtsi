@@ -59,7 +59,7 @@
 };
 
 &pil_gpu_mem {
-	reg = <0 0x91c15000 0 0x2000>;
+	reg = <0 0x91c15000 0 0x4000>;
 };
 
 &qseecom_mem {
