@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   compile:
    docker:
-      - image: fadlyas/kernel_dockerfile:latest
+      - image: bryanhafidz/brynlab:latest
    steps:
       - run:
           command: |
