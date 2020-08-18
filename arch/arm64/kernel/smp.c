@@ -428,7 +428,7 @@ void cpu_die_early(void)
 static void __init hyp_mode_check(void)
 {
 	if (is_hyp_mode_available())
-		pr_info("CPU: All CPU(s) started at EL2\n");
+		pr_debug("CPU: All CPU(s) started at EL2\n");
 	else if (is_hyp_mode_mismatched())
 		WARN_TAINT(1, TAINT_CPU_OUT_OF_SPEC,
 			   "CPU: CPUs started in inconsistent modes");
