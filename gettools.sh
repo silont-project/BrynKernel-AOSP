@@ -10,10 +10,10 @@ sudo apt install bc bash git-core gnupg build-essential \
     m4 gcc libtool zlib1g-dev flex bison libssl-dev
 
 # Clone toolchain
-#git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android-10.0.0_r41 --depth=1 stock
-#git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b android-10.0.0_r41 --depth=1 stock_32
-git clone https://github.com/arter97/arm64-gcc.git --depth=1 gcc64
-git clone https://github.com/arter97/arm32-gcc.git --depth=1 gcc32
+git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android-10.0.0_r41 --depth=1 stock
+git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b android-10.0.0_r41 --depth=1 stock_32
+#git clone https://github.com/arter97/arm64-gcc.git --depth=1 gcc64
+#git clone https://github.com/arter97/arm32-gcc.git --depth=1 gcc32
 
 # Clone AnyKernel3
 git clone https://github.com/MumetNgoding/AnyKernel3.git -b master
