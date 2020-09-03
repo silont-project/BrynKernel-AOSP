@@ -900,11 +900,6 @@ void hdd_set_olpc_mode(tHalHandle hHal, bool low_power)
 *
 * Return: void
 */
-void hdd_set_olpc_mode(tHalHandle hHal, bool low_power)
-{
-    sme_update_olpc_mode(hHal, low_power);
-}
-
 /**
  * hdd_set_vowifi_mode() - Process VOWIFI command.
  * @hdd_ctx: context handler
