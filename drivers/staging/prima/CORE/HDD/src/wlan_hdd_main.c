@@ -878,6 +878,19 @@ static int hdd_parse_setrmcactionperiod_command(tANI_U8 *pValue,
 
     return 0;
 }
+/*
+ * hdd_set_olpc_mode() - Process the OLPCMODE command and invoke the SME api
+ *
+ * @hHal: context handler
+ * @low_power: Value to be sent as a part of the OLPCMODE command
+ *
+ * Return: void
+ */
+void hdd_set_olpc_mode(tHalHandle hHal, bool low_power)
+{
+    sme_update_olpc_mode(hHal, low_power);
+}
+
 
 /*
 + * hdd_set_olpc_mode() - Process the OLPCMODE command and invoke the SME api
@@ -3614,14 +3627,7 @@ static inline void hdd_assign_reassoc_handoff(tCsrHandoffRequest *handoffInfo)
 }
 #endif
 
-/**
- * wlan_hdd_free_cache_channels() - Free the cache channels list
- * @hdd_ctx: Pointer to HDD context
- *
- * Return: None
- */
-
-static void wlan_hdd_free_cache_channels(hdd_context_t *hdd_ctx)
+void wlan_hdd_free_cache_channels(hdd_context_t *hdd_ctx)
 {
 	if(!hdd_ctx || !hdd_ctx->original_channels)
 		return;
@@ -3729,13 +3735,11 @@ int hdd_parse_disable_chan_cmd(hdd_adapter_t *adapter, tANI_U8 *ptr)
 	       __func__, tempInt);
 
 	if (!tempInt) {
-		if (!wlan_hdd_restore_channels(hdd_ctx)) {
-			/*
-			 * Free the cache channels only when the command is
-			 * received with num channels as 0
-			 */
-			wlan_hdd_free_cache_channels(hdd_ctx);
-		}
+		/*
+		 * Restore and Free the cache channels when the command is
+		 * received with num channels as 0
+		 */
+		wlan_hdd_restore_channels(hdd_ctx);
 		return 0;
 	}
 
@@ -4092,7 +4096,7 @@ static int hdd_driver_command(hdd_adapter_t *pAdapter,
 
            ptr = (tANI_U8*)command + 11;
            hdd_set_vowifi_mode(pHddCtx, *ptr - '0');
-	}
+       }
 
        else if (strncmp(command, "OLPCMODE", 8) == 0)
        {
@@ -10552,6 +10556,11 @@ VOS_STATUS hdd_stop_adapter( hdd_context_t *pHddCtx, hdd_adapter_t *pAdapter,
           /* Delete all associated STAs before stopping AP */
           if (test_bit(SOFTAP_BSS_STARTED, &pAdapter->event_flags))
                hdd_del_all_sta(pAdapter);
+
+          /* Flush the PMKID cache in CSR */
+          if (eHAL_STATUS_SUCCESS != sme_RoamDelPMKIDfromCache(pHddCtx->hHal,
+                                               pAdapter->sessionId, NULL, TRUE))
+               hddLog(VOS_TRACE_LEVEL_ERROR, FL("Cannot flush PMKIDCache"));
           /* Fall through */
       case WLAN_HDD_P2P_GO:
 
@@ -11072,16 +11081,19 @@ VOS_STATUS hdd_reset_all_adapters( hdd_context_t *pHddCtx )
       if (pAdapter->device_mode == WLAN_HDD_MONITOR)
           pAdapter->sessionCtx.monitor.state = MON_MODE_STOP;
 
-      hdd_deinit_tx_rx(pAdapter);
+      if (test_bit(DEVICE_IFACE_OPENED, &pAdapterNode->pAdapter->event_flags))
+          hdd_deinit_tx_rx(pAdapter);
 
       if(pAdapter->device_mode == WLAN_HDD_IBSS )
          hdd_ibss_deinit_tx_rx(pAdapter);
 
-      status = hdd_sta_id_hash_detach(pAdapter);
-      if (status != VOS_STATUS_SUCCESS)
-          hddLog(VOS_TRACE_LEVEL_ERROR,
-                 FL("sta id hash detach failed for session id %d"),
-                 pAdapter->sessionId);
+      if (test_bit(DEVICE_IFACE_OPENED, &pAdapterNode->pAdapter->event_flags)) {
+         status = hdd_sta_id_hash_detach(pAdapter);
+         if (status != VOS_STATUS_SUCCESS)
+             hddLog(VOS_TRACE_LEVEL_ERROR,
+                    FL("sta id hash detach failed for session id %d"),
+                    pAdapter->sessionId);
+         }
 
       wlan_hdd_decr_active_session(pHddCtx, pAdapter->device_mode);
 
