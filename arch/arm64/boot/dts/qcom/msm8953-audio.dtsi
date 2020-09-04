@@ -107,8 +107,7 @@
 			<&afe_proxy_rx>, <&afe_proxy_tx>,
 			<&incall_record_rx>, <&incall_record_tx>,
 			<&incall_music_rx>, <&incall_music_2_rx>,
-			<&afe_loopback_tx>,
-			<&proxy_rx>, <&proxy_tx>;
+			<&afe_loopback_tx>;
 
 		asoc-cpu-names = "msm-dai-q6-auxpcm.1",
 				"msm-dai-q6-mi2s.0", "msm-dai-q6-mi2s.1",
@@ -302,8 +301,7 @@
 				<&incall_record_rx>, <&incall_record_tx>,
 				<&incall_music_rx>, <&incall_music_2_rx>,
 				<&sb_5_rx>, <&bt_sco_rx>, <&bt_sco_tx>,
-				<&int_fm_rx>, <&int_fm_tx>, <&sb_6_rx>,
-				<&proxy_rx>, <&proxy_tx>;
+				<&int_fm_rx>, <&int_fm_tx>, <&sb_6_rx>;
 
 		asoc-cpu-names = "msm-dai-q6-auxpcm.1",
 				"msm-dai-q6-mi2s.2", "msm-dai-q6-mi2s.3",
