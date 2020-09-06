@@ -125,7 +125,7 @@ spidev_sync_write(struct spidev_data *spidev, size_t len)
 	struct spi_transfer	t = {
 			.tx_buf		= spidev->tx_buffer,
 			.len		= len,
-
+//			.speed_hz	= spidev->speed_hz,
 			.delay_usecs = 0,
 			.cs_change   = 0,
 			.speed_hz   = 960000,
@@ -169,7 +169,7 @@ spidev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 
 	mutex_lock(&spidev->buf_lock);
 
-
+//begin liuhongtao added for buffer kmalloc size
 	if (!spidev->rx_buffer) {
 		spidev->rx_buffer = kmalloc(bufsiz, GFP_KERNEL);
 		if (!spidev->rx_buffer) {
@@ -178,7 +178,7 @@ spidev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 			goto read_unlock;
 		}
 	}
-
+//end liuhongtao added for buffer kmalloc size
 
 	status = spidev_sync_read(spidev, count);
 	if (status > 0) {
@@ -191,12 +191,12 @@ spidev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 			status = status - missing;
 	}
 
-
+//begin liuhongtao added for buffer kmalloc size
 	kfree(spidev->rx_buffer);
 	spidev->rx_buffer = NULL;
 
 read_unlock:
-
+//end liuhongtao added for buffer kmalloc size
 
 	mutex_unlock(&spidev->buf_lock);
 
@@ -222,7 +222,7 @@ spidev_write(struct file *filp, const char __user *buf,
 
 	mutex_lock(&spidev->buf_lock);
 
-
+//begin liuhongtao added for buffer kmalloc size
 	if (!spidev->tx_buffer) {
 		spidev->tx_buffer = kmalloc(count, GFP_KERNEL);
 		if (!spidev->tx_buffer) {
@@ -231,7 +231,7 @@ spidev_write(struct file *filp, const char __user *buf,
 			goto write_unlock;
 		}
 	}
-
+//end liuhongtao added for buffer kmalloc size
 
 	missing = copy_from_user(spidev->tx_buffer, buf, count);
 	if (missing == 0)
@@ -239,12 +239,12 @@ spidev_write(struct file *filp, const char __user *buf,
 	else
 		status = -EFAULT;
 
-
+//begin liuhongtao added for buffer kmalloc size
 	kfree(spidev->tx_buffer);
 	spidev->tx_buffer = NULL;
 
 write_unlock:
-
+//end liuhongtao added for buffer kmalloc size
 
 	mutex_unlock(&spidev->buf_lock);
 
@@ -271,7 +271,7 @@ static int spidev_message(struct spidev_data *spidev,
 	 * We walk the array of user-provided transfers, using each one
 	 * to initialize a kernel version of the same transfer.
 	 */
-
+//begin liuhongtao added for buffer kmalloc size
 	if (!spidev->rx_buffer) {
 		spidev->rx_buffer = kmalloc(bufsiz, GFP_KERNEL);
 		if (!spidev->rx_buffer) {
@@ -288,7 +288,7 @@ static int spidev_message(struct spidev_data *spidev,
 			goto txbuffer_err;
 		}
 	}
-
+//end liuhongtao added for buffer kmalloc size
 
 	tx_buf = spidev->tx_buffer;
 	rx_buf = spidev->rx_buffer;
@@ -382,14 +382,14 @@ static int spidev_message(struct spidev_data *spidev,
 	status = total;
 
 done:
-
+//begin liuhongtao added for buffer kmalloc size
 	kfree(spidev->tx_buffer);
 	spidev->tx_buffer = NULL;
 txbuffer_err:
 	kfree(spidev->rx_buffer);
 	spidev->rx_buffer = NULL;
 rxbuffer_err:
-
+//end liuhongtao added for buffer kmalloc size
 	kfree(k_xfers);
 	return status;
 }
@@ -673,7 +673,7 @@ static int spidev_open(struct inode *inode, struct file *filp)
 		goto err_find_dev;
 	}
 
-
+//begin liuhongtao removed for buffer kmalloc size
 /*
 	if (!spidev->tx_buffer) {
 		spidev->tx_buffer = kmalloc(bufsiz, GFP_KERNEL);
@@ -693,7 +693,7 @@ static int spidev_open(struct inode *inode, struct file *filp)
 		}
 	}
 */
-
+//end liuhongtao removed for buffer kmalloc size
 
 	spidev->users++;
 	filp->private_data = spidev;
@@ -702,13 +702,13 @@ static int spidev_open(struct inode *inode, struct file *filp)
 	mutex_unlock(&device_list_lock);
 	return 0;
 
-
+//begin liuhongtao removed for buffer kmalloc size
 /*
 err_alloc_rx_buf:
 	kfree(spidev->tx_buffer);
 	spidev->tx_buffer = NULL;
 */
-
+//end liuhongtao removed for buffer kmalloc size
 
 err_find_dev:
 	mutex_unlock(&device_list_lock);
@@ -733,7 +733,7 @@ static int spidev_release(struct inode *inode, struct file *filp)
 	spidev->users--;
 	if (!spidev->users) {
 
-
+//begin liuhongtao removed for buffer kmalloc size
 /*
 		kfree(spidev->tx_buffer);
 		spidev->tx_buffer = NULL;
@@ -741,6 +741,14 @@ static int spidev_release(struct inode *inode, struct file *filp)
 		kfree(spidev->rx_buffer);
 		spidev->rx_buffer = NULL;
 */
+//end liuhongtao removed for buffer kmalloc size
+		spin_lock_irq(&spidev->spi_lock);
+		if (spidev->spi)
+			spidev->speed_hz = spidev->spi->max_speed_hz;
+
+		/* ... after we unbound from the underlying device? */
+		dofree = (spidev->spi == NULL);
+		spin_unlock_irq(&spidev->spi_lock);
 
 		if (dofree)
 			kfree(spidev);

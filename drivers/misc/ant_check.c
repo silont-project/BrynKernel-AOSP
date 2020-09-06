@@ -1,4 +1,4 @@
-#include <linux/init.h>
+#include <linux/init.h>	
 #include <linux/miscdevice.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -14,7 +14,6 @@
 #include <linux/workqueue.h>
 #include <linux/mutex.h>
 #include <linux/regulator/consumer.h>
-
 #include <linux/fb.h>
 
 
@@ -45,7 +44,7 @@ static irqreturn_t ant_interrupt(int irq, void *data)
 
 	ant_gpio = gpio_get_value_cansleep(ant_info->irq_gpio);
 	pr_err("ant_interrupt gpio value = %d\n", ant_gpio);
-	if (ant_gpio == ant_info->ant_check_state){
+	if(ant_gpio == ant_info->ant_check_state){
 		pr_err("ant_interrupt do nothing\n");
 		return IRQ_HANDLED;
 	}else{
@@ -60,8 +59,8 @@ static irqreturn_t ant_interrupt(int irq, void *data)
 			input_report_key(ant_info->ipdev, KEY_ANT_UNCONNECT, 0);
 			input_sync(ant_info->ipdev);
 	}
-
-
+	 //enable_irq(irq);
+//	 mutex_unlock(&ant_info->io_lock);
      return IRQ_HANDLED;
 }
 
@@ -101,14 +100,14 @@ static int ant_register_class_dev(struct ant_check_info *ant_info){
 		if (IS_ERR(ant_info->ant_sys_class)){
 			ant_info->ant_sys_class = NULL;
 			printk(KERN_ERR "could not allocate ant_class\n");
-			return -EPERM;
+			return -1;
 		}
 	}
 
 	err = class_create_file(ant_info->ant_sys_class, &ant_state);
-	if (err < 0){
+	if(err < 0){
 		class_destroy(ant_info->ant_sys_class);
-		return -EPERM;
+		return -1;
 	}
 	return 0;
 }
@@ -133,7 +132,7 @@ static void ant_pinctrl_init(struct device *dev, struct ant_check_info *ant_info
 	}
 
         rc = pinctrl_select_state(ant_info->ant_pinctrl, ant_info->ant_pinctrl_state);
-	if (rc < 0){
+	if(rc < 0){
 		printk("[ant check] pinctrl_select_state error\n");
 	}
 
@@ -145,9 +144,9 @@ static int ant_probe(struct platform_device *pdev)
 	int rc = 0;
 	int err;
 	struct ant_check_info *ant_info;
-
+		
 	if (pdev->dev.of_node) {
-		ant_info = kzalloc(sizeof(struct ant_check_info), GFP_KERNEL);
+		ant_info = kzalloc(sizeof(struct ant_check_info), GFP_KERNEL);		  
 		if (!ant_info) {
 			pr_err("Macle %s: failed to alloc memory for module data\n",__func__);
 			return -ENOMEM;
@@ -173,7 +172,7 @@ static int ant_probe(struct platform_device *pdev)
 	ant_info->ipdev->name = "ant_check-input";
 	input_set_capability(ant_info->ipdev, EV_KEY, KEY_ANT_CONNECT);
 	input_set_capability(ant_info->ipdev, EV_KEY, KEY_ANT_UNCONNECT);
-
+//	set_bit(EV_KEY, ant_info->ipdev->evbit);
 	rc = input_register_device(ant_info->ipdev);
 	if (rc) {
 		pr_err("ant_probe: input_register_device fail rc=%d\n", rc);
@@ -260,7 +259,7 @@ static int ant_remove(struct platform_device *pdev)
 static struct of_device_id sn_match_table[] = {
 	{ .compatible = "ant_check", },
 	{ },
-};
+}; 
 
 static struct platform_driver ant_driver = {
 	.probe                = ant_probe,

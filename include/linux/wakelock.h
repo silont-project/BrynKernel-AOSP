@@ -1,7 +1,7 @@
 /* include/linux/wakelock.h
  *
  * Copyright (C) 2007-2012 Google, Inc.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and

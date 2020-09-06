@@ -1,7 +1,7 @@
 /*
- *  driver interface to finger print sensor  for
+ *  driver interface to finger print sensor  for 
  *	Copyright (c) 2015  ChipSailing Technology.
- *	Copyright (C) 2019 XiaoMi, Inc.
+ *	Copyright (C) 2020 XiaoMi, Inc.
  *	All rights reserved.
 ***********************************************************/
 #include <linux/buffer_head.h>

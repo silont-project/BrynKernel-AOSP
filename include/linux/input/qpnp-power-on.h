@@ -1,5 +1,5 @@
 /* Copyright (c) 2012-2015, 2017, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -63,8 +63,11 @@ enum pon_restart_reason {
 
 	/* 32 ~ 63 for OEMs/ODMs secific features */
 	PON_RESTART_REASON_OEM_MIN		= 0x20,
-        PON_RESTART_REASON_PANIC                = 0x21,
-	PON_RESTART_REASON_NORMAL               = 0x22,
+#ifdef CONFIG_BOOT_INFO
+	PON_RESTART_REASON_PANIC		= 0x21,
+	PON_RESTART_REASON_NORMAL		= 0x22,
+	PON_RESTART_REASON_OTHER		= 0x00,
+#endif
 	PON_RESTART_REASON_OEM_MAX		= 0x3f,
 };
 
@@ -101,8 +104,17 @@ static inline bool qpnp_pon_check_hard_reset_stored(void)
 {
 	return false;
 }
-static inline int qpnp_pon_is_lpk(void) { return -ENODEV; }
-static inline int qpnp_pon_is_ps_hold_reset(void) { return -ENODEV; }
+
+#ifdef CONFIG_BOOT_INFO
+static inline int qpnp_pon_is_lpk(void)
+{
+	return -ENODEV;
+}
+static inline int qpnp_pon_is_ps_hold_reset(void)
+{
+	return -ENODEV;
+}
+#endif
 
 #endif
 

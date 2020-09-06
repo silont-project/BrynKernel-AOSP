@@ -1,5 +1,5 @@
 /* Copyright (c) 2016-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1775,7 +1775,7 @@ static void qpnp_flash_led_brightness_set(struct led_classdev *led_cdev,
 		qpnp_flash_led_node_set(fnode, value);
 	}
 //start
-	if (!strcmp("led:switch_0",led_cdev->name) && !value)
+	if(!strcmp("led:switch_0",led_cdev->name) && !value)
 		if(NULL != led->flashlight_node)
 			led->flashlight_node->cdev.brightness = value;
 //end
@@ -1803,7 +1803,7 @@ static void qpnp_flashlight_led_brightness_set(struct led_classdev *led_cdev,
 
 	spin_lock(&led->lock);
 	if (flashlight_data) {
-		for (i = 0; i < flashlight_data->num_switch; ++i)
+		for(i = 0; i < flashlight_data->num_switch; ++i)
 			for(j = 0; j < led->num_snodes; ++j) {
 				pr_debug(" switch name[%d] = %s, snode name[%d] = %s\n",i, flashlight_data->switch_name[i],j, led->snode[j].cdev.name);
 				if(!strcmp(flashlight_data->switch_name[i], led->snode[j].cdev.name)) {
@@ -1814,7 +1814,7 @@ static void qpnp_flashlight_led_brightness_set(struct led_classdev *led_cdev,
 				}
 			}
 
-		for (i = 0; i < flashlight_data->num_torch; ++i)
+		for(i = 0; i < flashlight_data->num_torch; ++i)
 			for(j = 0; j < led->num_fnodes; ++j) {
 				pr_debug(" torch name[%d] = %s, fnode name[%d] = %s\n",i, flashlight_data->torch_name[i],j, led->fnode[j].cdev.name);
 				if(!strcmp(flashlight_data->torch_name[i], led->fnode[j].cdev.name)) {
@@ -1823,7 +1823,7 @@ static void qpnp_flashlight_led_brightness_set(struct led_classdev *led_cdev,
 				}
 			}
 
-		for (i = 0; i < flashlight_data->num_switch; ++i)
+		for(i = 0; i < flashlight_data->num_switch; ++i)
 			for(j = 0; j < led->num_snodes; ++j) {
 				pr_debug(" switch name[%d] = %s, snode name[%d] = %s\n",i, flashlight_data->switch_name[i],j, led->snode[j].cdev.name);
 				if(!strcmp(flashlight_data->switch_name[i], led->snode[j].cdev.name)) {
@@ -2231,7 +2231,7 @@ static int qpnp_flashlight_led_parse_and_register(struct qpnp_flash_led *led,
 	pr_debug("%s qcom,torch-name count %d\n", __func__, flashlight_node->num_torch);
 
 	temp_name = kzalloc(sizeof(char *) * count, GFP_KERNEL);
-	if (temp_name) {
+	if(temp_name) {
 		for(i = 0; i < count; ++i) {
 			flashlight_node->torch_name = temp_name;
 			temp_name[i] = kzalloc(sizeof(char) * NAME_SIZE,GFP_KERNEL);
@@ -2252,7 +2252,7 @@ static int qpnp_flashlight_led_parse_and_register(struct qpnp_flash_led *led,
 	pr_debug("%s qcom,switch-name count %d\n", __func__, count);
 
 	temp_name = kzalloc(sizeof(char *) * count, GFP_KERNEL);
-	if (temp_name) {
+	if(temp_name) {
 		for(i = 0; i < count; ++i) {
 			flashlight_node->switch_name = temp_name;
 			temp_name[i] = kzalloc(sizeof(char) * NAME_SIZE,GFP_KERNEL);

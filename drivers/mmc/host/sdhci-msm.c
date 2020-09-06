@@ -2,8 +2,8 @@
  * drivers/mmc/host/sdhci-msm.c - Qualcomm Technologies, Inc. MSM SDHCI Platform
  * driver source file
  *
- * Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+ * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -4798,7 +4798,7 @@ static bool sdhci_msm_is_bootdevice(struct device *dev)
 /* add sdcard slot detect status for factory mode
  *    begin
  *    */
-static struct kobject *card_slot_device;
+static struct kobject *card_slot_device = NULL;
 static struct sdhci_msm_host *host_with_slot_detect = NULL;
 
 static ssize_t card_slot_status_show(struct device *dev,

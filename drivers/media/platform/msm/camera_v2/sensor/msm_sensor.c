@@ -1,4 +1,5 @@
-/* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -211,12 +212,17 @@ int msm_sensor_power_up(struct msm_sensor_ctrl_t *s_ctrl)
 		if (rc < 0)
 			return rc;
 
-		for(check_id_retry = 0; check_id_retry < 3; check_id_retry++) {
-			rc = msm_sensor_check_id(s_ctrl);
-			if (!rc) break;
-			msleep(20);
+		if (s_ctrl->vendor_id_need_read) {
+			rc = msm_sensor_match_vendor_id(s_ctrl);
+			if (rc < 0) {
+				msm_camera_power_down(power_info,
+					s_ctrl->sensor_device_type, sensor_i2c_client);
+				msleep(20);
+				continue;
+			}
 		}
 
+		rc = msm_sensor_check_id(s_ctrl);
 		if (rc < 0) {
 			msm_camera_power_down(power_info,
 				s_ctrl->sensor_device_type, sensor_i2c_client);

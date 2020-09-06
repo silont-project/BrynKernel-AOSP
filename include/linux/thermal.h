@@ -267,7 +267,7 @@ struct thermal_message_device {
 };
 int thermal_message_device_register(void);
 void thermal_message_device_unregister(void);
-#endif
+#endif //CONFIG_THERMAL_SWITCH
 
 /**
  * struct thermal_governor - structure that holds thermal governor information

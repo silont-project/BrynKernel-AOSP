@@ -54,7 +54,6 @@ config ANDROID_LMK_NOTIFY_TRIGGER
 	"/sys/module/lowmemorykiller/parameters/notify_trigger".
 
 source "drivers/staging/android/ion/Kconfig"
-
 endif # if ANDROID
 
 endmenu
