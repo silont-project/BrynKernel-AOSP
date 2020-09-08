@@ -104,7 +104,7 @@
 		mas_oxili: mas-oxili {
 			cell-id = <MSM_BUS_MASTER_GRAPHICS_3D>;
 			label = "mas-oxili";
-			qcom,buswidth = <8>;
+			qcom,buswidth = <32>;
 			qcom,agg-ports = <1>;
 			qcom,ap-owned;
 			qcom,qport = <2>;
@@ -120,7 +120,7 @@
 		mas_snoc_bimc_0: mas-snoc-bimc-0 {
 			cell-id = <MSM_BUS_SNOC_BIMC_0_MAS>;
 			label = "mas-snoc-bimc-0";
-			qcom,buswidth = <8>;
+			qcom,buswidth = <32>;
 			qcom,agg-ports = <1>;
 			qcom,ap-owned;
 			qcom,qport = <3>;
@@ -133,7 +133,7 @@
 		mas_snoc_bimc_2: mas-snoc-bimc-2 {
 			cell-id = <MSM_BUS_SNOC_BIMC_2_MAS>;
 			label = "mas-snoc-bimc-2";
-			qcom,buswidth = <8>;
+			qcom,buswidth = <32>;
 			qcom,agg-ports = <1>;
 			qcom,ap-owned;
 			qcom,qport = <4>;
@@ -146,7 +146,7 @@
 		mas_snoc_bimc_1: mas-snoc-bimc-1 {
 			cell-id = <MSM_BUS_SNOC_BIMC_1_MAS>;
 			label = "mas-snoc-bimc-1";
-			qcom,buswidth = <8>;
+			qcom,buswidth = <32>;
 			qcom,agg-ports = <1>;
 			qcom,qport = <5>;
 			qcom,qos-mode = "bypass";
@@ -762,7 +762,7 @@
 		slv_gpu_cfg:slv-gpu-cfg {
 			cell-id = <MSM_BUS_SLAVE_GRAPHICS_3D_CFG>;
 			label = "slv-gpu-cfg";
-			qcom,buswidth = <8>;
+			qcom,buswidth = <32>;
 			qcom,agg-ports = <1>;
 			qcom,ap-owned;
 			qcom,bus-dev = <&fab_pcnoc>;
