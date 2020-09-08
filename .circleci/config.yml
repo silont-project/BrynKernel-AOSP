@@ -2,14 +2,13 @@ version: 2.1
 jobs:
   compile:
    docker:
-      - image: bryanhafidz/brynlab:latest
+      - image: bryanhafidz/bryan-docker:0x01
    steps:
       - run:
           command: |
-           apt-get -y update && apt-get -y upgrade && apt-get -y install curl libstdc++6 git wget python-is-python3 gcc clang python3-pip nano && pip3 install telegram-send
            git config --global user.name "MumetNgoding"
            git config --global user.email "nugroho31.com@gmail.com"
-           git clone https://github.com/MumetNgoding/BrynKernel-AOSP --depth 1 Q
+           git clone https://github.com/MumetNgoding/BrynKernel-AOSP Q
            cd Q
            chmod a+x gettools.sh
            ./gettools.sh
