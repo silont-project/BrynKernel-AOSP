@@ -742,13 +742,6 @@ static int spidev_release(struct inode *inode, struct file *filp)
 		spidev->rx_buffer = NULL;
 */
 //end liuhongtao removed for buffer kmalloc size
-		spin_lock_irq(&spidev->spi_lock);
-		if (spidev->spi)
-			spidev->speed_hz = spidev->spi->max_speed_hz;
-
-		/* ... after we unbound from the underlying device? */
-		dofree = (spidev->spi == NULL);
-		spin_unlock_irq(&spidev->spi_lock);
 
 		if (dofree)
 			kfree(spidev);
