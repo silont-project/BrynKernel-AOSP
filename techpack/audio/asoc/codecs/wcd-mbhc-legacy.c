@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-2018, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -29,7 +30,6 @@
 #include <sound/jack.h>
 #include "wcd-mbhc-legacy.h"
 #include "wcd-mbhc-v2.h"
-
 static int det_extn_cable_en;
 module_param(det_extn_cable_en, int, 0664);
 MODULE_PARM_DESC(det_extn_cable_en, "enable/disable extn cable detect");
@@ -287,7 +287,6 @@ static void wcd_mbhc_update_fsm_source(struct wcd_mbhc *mbhc,
 
 	};
 }
-
 static void wcd_enable_mbhc_supply(struct wcd_mbhc *mbhc,
 			enum wcd_mbhc_plug_type plug_type)
 {
