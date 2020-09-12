@@ -440,7 +440,6 @@ static void adreno_input_work(struct work_struct *work)
 
 	mutex_lock(&device->mutex);
 
-	device->flags |= KGSL_FLAG_WAKE_ON_TOUCH;
 
 	/*
 	 * Don't schedule adreno_start in a high priority workqueue, we are
@@ -478,8 +477,6 @@ static void adreno_input_event(struct input_handle *handle, unsigned int type,
 	 * here before
 	 */
 
-	if (device->flags & KGSL_FLAG_WAKE_ON_TOUCH)
-		return;
 
 	/*
 	 * If the device is in nap, kick the idle timer to make sure that we
@@ -493,7 +490,6 @@ static void adreno_input_event(struct input_handle *handle, unsigned int type,
 		 * keeping the device in nap without rendering
 		 */
 
-		device->flags |= KGSL_FLAG_WAKE_ON_TOUCH;
 
 		mod_timer(&device->idle_timer,
 			jiffies + device->pwrctrl.interval_timeout);
@@ -1451,6 +1447,20 @@ static int adreno_probe(struct platform_device *pdev)
 		adreno_dev->gpuhtw_llc_slice = NULL;
 	}
 
+#ifdef CONFIG_INPUT
+	if (!device->pwrctrl.input_disable) {
+		adreno_input_handler.private = device;
+		/*
+		 * It isn't fatal if we cannot register the input handler.  Sad,
+		 * perhaps, but not fatal
+		 */
+		if (input_register_handler(&adreno_input_handler)) {
+			adreno_input_handler.private = NULL;
+			KGSL_DRV_ERR(device,
+				"Unable to register the input handler\n");
+		}
+	}
+#endif
 out:
 	if (status) {
 		adreno_ringbuffer_close(adreno_dev);
