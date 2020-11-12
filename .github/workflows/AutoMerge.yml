@@ -1,0 +1,32 @@
+name: kernel_xiaomi_onclite
+on:
+  push:
+    branches:
+      - R
+  schedule:
+    - cron: '0 */12 * * *'
+      
+jobs:
+  build:
+    name: Kernel-Builder
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup timezone
+      uses: zcong1993/setup-timezone@master
+      with:
+        timezone: Asia/Jakarta
+    - name: Automatic Kernel Push
+      run: |
+           git config --global user.name "MumetNgoding"
+           git config --global user.email "nugroho31.com@gmail.com"
+           sudo apt-get -y install bc build-essential zip curl libstdc++6 git wget nano gcc clang libssl-dev rsync flex bison
+           git clone https://github.com/silont-project/kernel_xiaomi_onclite -b R Q
+           cd Q
+           git fetch https://github.com/MumetNgoding/BrynKernel-AOSP R
+           git merge FETCH_HEAD
+           git push https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} 
+           chmod a+x gettools.sh
+           chmod a+x build.clang.sh
+           ./gettools.sh
+           ./build.clang.sh
