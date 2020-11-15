@@ -9,7 +9,6 @@ DESTDIR ?=
 SRCDIR ?= $(PREFIX)/src
 DKMSDIR ?= $(SRCDIR)/wireguard
 DEPMOD ?= depmod
-DEPMODBASEDIR ?= /
 
 PWD := $(shell pwd)
 
@@ -33,7 +32,7 @@ clean:
 
 module-install:
 	@$(MAKE) -C $(KERNELDIR) M=$(PWD) WIREGUARD_VERSION="$(WIREGUARD_VERSION)" modules_install
-	$(DEPMOD) -b "$(DEPMODBASEDIR)" -a $(KERNELRELEASE)
+	$(DEPMOD) -a $(KERNELRELEASE)
 
 install: module-install
 

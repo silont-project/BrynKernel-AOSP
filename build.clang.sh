@@ -79,11 +79,13 @@ chmod +x telegram
 # Add New Variable
 KBUILD_BUILD_TIMESTAMP=$(date)
 export KBUILD_BUILD_TIMESTAMP
-COMMIT=$(git log --pretty=format:'%h: %s' -1)
 CPU=$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) @ .*/\1/p')
+HEAD_COMMIT="$(git rev-parse HEAD)"
+GITHUB_URL="https://github.com/MumetNgoding/BrynKernel-AOSP/commits/"
+COMMIT=$(git log --pretty=format:'%h: %s' -1)
 
 # Get Script Source
-./telegram -f "$(echo -e SiLonT-*.zip)" "$(echo LATEST COMMIT: $'\n' $COMMIT  $'\n' DATE: $'\n' $KBUILD_BUILD_TIMESTAMP $'\n' BUILD USING: $'\n' $CPU $'\n' CC AUTHOR: $'\n' @BryanHafidzTorvalds $'\n' DURATION: $'\n' $DURATION Seconds)"
+./telegram -f "$(echo -e SiLonT-*.zip)" "$(echo ⚒️  [*BUILDING*] ⚒️  ️$'\n' HEAD MESSAGE:$'\n' $COMMIT $'\n' COMMIT URL: $'\n' ${GITHUB_URL}${HEAD_COMMIT} $'\n' DATE: $'\n' $KBUILD_BUILD_TIMESTAMP $'\n' BUILD USING: $'\n' $CPU $'\n' CC AUTHOR: $'\n' @BryanHafidzTorvalds $'\n' DURATION: $'\n' $DURATION Seconds $'\n' ⚒️  [*COMPLETE*] ⚒️  )"
 rm "$(echo SiLonT-*.zip)"
 rm telegram
 echo -e "\n(!) Done Push to Telegram"
