@@ -22,7 +22,7 @@
 		qcom,mdss-dsi-panel-name = "boe hx8394f video mode dsi panel";
 		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
 		qcom,mdss-dsi-panel-type = "dsi_video_mode";
-		qcom,mdss-dsi-panel-framerate = <58>;
+		qcom,mdss-dsi-panel-framerate = <60>;
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <720>;
@@ -51,6 +51,7 @@
 				39 01 00 00 05 00 0a c9 13 00 0a 10 b2 20 00 91 00
 				39 01 00 00 05 00 02 55 11
 				39 01 00 00 05 00 0a ca 24 24 22 20 20 20 20 20 20
+				39 01 00 00 00 00 02 5e 01
 				39 01 00 00 00 00 02 53 24
 				39 01 00 00 00 00 02 CC 0B
 				39 01 00 00 00 00 02 BA 72
@@ -115,7 +116,7 @@
 		qcom,mdss-dsi-t-clk-post = <0x0a>;
 		qcom,mdss-dsi-t-clk-pre = <0x1f>;
 		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-dsi-bl-max-level = <255>;
+		qcom,mdss-dsi-bl-max-level = <4095>;
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
