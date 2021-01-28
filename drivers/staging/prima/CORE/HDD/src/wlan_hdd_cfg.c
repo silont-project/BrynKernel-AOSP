@@ -4191,7 +4191,7 @@ VOS_STATUS hdd_update_mac_config(hdd_context_t *pHddCtx)
    // make sure all pointers in macTable are NULL, so an early jump to config_exit will not crash
    memset(macTable, 0, sizeof(macTable));
 
-   status = request_firmware(&fw, WLAN_MAC_FILE, pHddCtx->parent_dev);
+   status = request_firmware(&fw, eWLAN_PAL_FALSE, pHddCtx->parent_dev);
 
    if (status)
    {
