@@ -8,7 +8,7 @@
 #apt-get -y install bc build-essential zip curl libstdc++6 git default-jre default-jdk wget nano python-is-python3 gcc clang libssl-dev rsync flex bison && pip3 install telegram-send
 
 # Clean Before Build
-make mrproper
+#make mrproper
 
 # Main environtment
 KERNEL_DIR=$PWD
