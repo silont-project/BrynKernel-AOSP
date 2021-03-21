@@ -68,7 +68,7 @@ echo "Flashable zip generated under $ZIP_DIR."
 echo "Please Wait ... Pushing ZIP Kernel to Telegram ..."
 
 # Push to Telegram
-END=$(date +%s)
+END=$(date +"%s")
 DURATION=$(( $END - $START ))
 
 cd $KERNEL_DIR/AnyKernel3
