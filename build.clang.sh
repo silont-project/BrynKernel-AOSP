@@ -24,8 +24,13 @@ export ARCH=arm64
 export CROSS_COMPILE
 export CROSS_COMPILE_ARM32
 
+wget https://raw.githubusercontent.com/MumetNgoding/Magic-Script/main/telegram
+chmod +x telegram
+./telegram -f "$(echo ⚒️  [*BUILDING STARTED*] ⚒️)"
+rm telegram
+
 # Build start
-START=$(date +"%s")
+START=$(date +%s)
 make O=out $CONFIG
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
@@ -37,7 +42,8 @@ if ! [ -a $KERN_IMG ]; then
     echo "Build error!"
     wget https://raw.githubusercontent.com/MumetNgoding/Magic-Script/main/telegram
     chmod +x telegram
-    ./telegram -f "BUILD ERROR !!"
+    ./telegram -f "$(echo -e log.txt)" "$(echo ⚒️  [*BUILDING ERROR !!*] ⚒️)"
+    rm telegram
     exit 1
 fi
 
@@ -68,8 +74,8 @@ echo "Flashable zip generated under $ZIP_DIR."
 echo "Please Wait ... Pushing ZIP Kernel to Telegram ..."
 
 # Push to Telegram
-END=$(date +"%s")
-DURATION=$(( $END - $START ))
+END=$(date -u +%s)
+DURATION=$(( END - START ))
 
 cd $KERNEL_DIR/AnyKernel3
 mv "$(echo SiLonT-*.zip)" "$KERNEL_DIR"
@@ -82,12 +88,13 @@ chmod +x telegram
 # Add New Variable
 KBUILD_BUILD_TIMESTAMP=$(date)
 export KBUILD_BUILD_TIMESTAMP
+CPU=$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) @ .*/\1/p')
 HEAD_COMMIT="$(git rev-parse HEAD)"
 GITHUB_URL="https://github.com/MumetNgoding/BrynKernel-AOSP/commits/"
 COMMIT=$(git log --pretty=format:'%h: %s' -1)
 
 # Get Script Source
-./telegram -f "$(echo -e SiLonT-*.zip)" "$(echo ⚒️  [*BUILDING*] ⚒️  ️$'\n' HEAD MESSAGE:$'\n' $COMMIT $'\n' COMMIT URL: $'\n' ${GITHUB_URL}${HEAD_COMMIT} $'\n' DATE: $'\n' $KBUILD_BUILD_TIMESTAMP $'\n' BUILD USING: $'\n' $CPU $'\n' CC AUTHOR: $'\n' @BryanHafidzTorvalds $'\n' DURATION: $'\n' $(($DURATION / 60)) minute(s) With $(($DURATION % 60)) Seconds $'\n' ⚒️  [*COMPLETE*] ⚒️  )"
+./telegram -f "$(echo -e SiLonT-*.zip)" "$(echo ⚒️  [*BUILDING*] ⚒️  ️$'\n' HEAD MESSAGE:$'\n' $COMMIT $'\n' COMMIT URL: $'\n' ${GITHUB_URL}${HEAD_COMMIT} $'\n' DATE: $'\n' $KBUILD_BUILD_TIMESTAMP $'\n' BUILD USING: $'\n' $CPU $'\n' CC AUTHOR: $'\n' @BryanHafidzTorvalds $'\n' DURATION: $'\n' $DURATION Seconds $'\n' ⚒️  [*COMPLETE*] ⚒️  )"
 rm "$(echo SiLonT-*.zip)"
 rm telegram
 echo -e "\n(!) Done Push to Telegram"
