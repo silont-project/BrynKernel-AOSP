@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Kernel-Builder
-    runs-on: ubuntu-21.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Setup timezone
@@ -26,7 +26,3 @@ jobs:
            git fetch https://github.com/MumetNgoding/BrynKernel-AOSP R
            git merge FETCH_HEAD
            git push https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git HEAD:${{ github.ref }} 
-           chmod a+x gettools.sh
-           chmod a+x build.clang.sh
-           ./gettools.sh
-           ./build.clang.sh
